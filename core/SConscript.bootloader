@@ -5,6 +5,8 @@ import tools
 
 TREZOR_MODEL = ARGUMENTS.get('TREZOR_MODEL', 'T')
 CMAKELISTS = int(ARGUMENTS.get('CMAKELISTS', 0))
+QA = ARGUMENTS.get('QA', '0') == 1
+PRODUCTION = 0 if QA else ARGUMENTS.get('PRODUCTION', '0') == 1
 DMA2D = False
 
 if TREZOR_MODEL in ('1', ):
@@ -154,7 +156,7 @@ tools.add_font('DEMIBOLD', FONT_DEMIBOLD, CPPDEFINES_MOD, SOURCE_MOD)
 tools.add_font('MONO', FONT_MONO, CPPDEFINES_MOD, SOURCE_MOD)
 
 
-env = Environment(ENV=os.environ, CFLAGS='%s -DPRODUCTION=%s' % (ARGUMENTS.get('CFLAGS', ''), ARGUMENTS.get('PRODUCTION', '0')))
+env = Environment(ENV=os.environ, CFLAGS='%s -DPRODUCTION=%d' % (ARGUMENTS.get('CFLAGS', ''), PRODUCTION))
 
 FEATURES_AVAILABLE = tools.configure_board(TREZOR_MODEL, FEATURES_WANTED, env, CPPDEFINES_MOD, SOURCE_TREZORHAL)
 
@@ -303,7 +305,9 @@ program_elf = env.Command(
 
 env.Depends(program_elf, rust)
 
-BINARY_NAME = f"build/bootloader/bootloader-{tools.get_model_identifier(TREZOR_MODEL)}"
+SUFFIX = '_qa' if QA else ''
+
+BINARY_NAME = f"build/bootloader/bootloader-{tools.get_model_identifier(TREZOR_MODEL)}{SUFFIX}"
 BINARY_NAME += "-" + tools.get_version('embed/bootloader/version.h')
 BINARY_NAME += "-" + tools.get_git_revision_short_hash()
 BINARY_NAME += "-dirty" if tools.get_git_modified() else ""
@@ -317,6 +321,6 @@ program_bin = env.Command(
     source=program_elf,
     action=[
         '$OBJCOPY -O binary -j .header -j .flash -j .data $SOURCE $TARGET',
-        '$HEADERTOOL $TARGET ' + ('-D' if ARGUMENTS.get('PRODUCTION', '0') == '0' else ''),
+        '$HEADERTOOL $TARGET ' + ('-D' if not PRODUCTION else ''),
         '$CP $TARGET ' + BINARY_NAME,
     ], )
