@@ -16,8 +16,8 @@ BL_CHECK_AUTO_END = "// --- END GENERATED BOOTLOADER SECTION ---\n"
 
 PATTERN = """\
 // {name} version {version}
-#define BOOTLOADER_{suffix}_00 ({{{bytes_00}}})
-#define BOOTLOADER_{suffix}_FF ({{{bytes_ff}}})
+#define BOOTLOADER_{suffix}_00 {{{bytes_00}}}
+#define BOOTLOADER_{suffix}_FF {{{bytes_ff}}}
 """
 
 
@@ -41,9 +41,9 @@ def to_uint_array(data: bytes) -> str:
     """Convert bytes to C array of uint8_t, like so:
 
     >>> to_uint_array(b"\\x00\\x01\\x02")
-    "uint8_t[] {0x00, 0x01, 0x02}"
+    "{0x00, 0x01, 0x02}"
     """
-    return "uint8_t[] {" + ", ".join([f"0x{i:02x}" for i in data]) + "}"
+    return ", ".join([f"0x{i:02x}" for i in data])
 
 
 def bootloader_str(file: Path) -> str:

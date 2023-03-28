@@ -58,7 +58,7 @@ def _check_signature_any(fw: "SignableImageProto", is_devel: bool = False) -> St
     if not fw.signature_present():
         return Status.MISSING
     try:
-        fw.verify()
+        fw.verify(is_devel)
         return Status.VALID if not is_devel else Status.DEVEL
     except Exception:
         pass
@@ -337,6 +337,8 @@ class VendorFirmware(firmware.VendorFirmware, CosiSignedMixin):
         assert isinstance(vh, VendorHeader)
 
         is_devel = self.vendor_header.vhash() == VHASH_DEVEL
+
+        print("is_devel", is_devel)
 
         return (
             vh._format(terse=not verbose)
