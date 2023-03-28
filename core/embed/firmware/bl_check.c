@@ -59,26 +59,50 @@ static secbool known_bootloader(const uint8_t *hash, int len) {
 }
 */
 
+// clang-format off
+// --- BEGIN GENERATED BOOTLOADER SECTION ---
+// bootloader_T1B1.bin version <unknown>
+#define BOOTLOADER_T1B1_00 ({uint8_t[] {0xc1, 0x01, 0xd3, 0x8a, 0x00, 0x5e, 0x4f, 0x5f, 0x87, 0x1f, 0x49, 0x78, 0x24, 0x9c, 0xf9, 0x82, 0xd1, 0x91, 0x4b, 0xa6, 0x90, 0x03, 0x9c, 0x50, 0x49, 0x61, 0x10, 0x4f, 0xee, 0xe7, 0x1d, 0x7b}})
+#define BOOTLOADER_T1B1_FF ({uint8_t[] {0xbd, 0xb2, 0xf7, 0x62, 0xfb, 0x10, 0xbb, 0x30, 0x1f, 0x95, 0xa3, 0x12, 0x6b, 0x41, 0x1f, 0x66, 0xfc, 0x57, 0x28, 0xce, 0x7f, 0x59, 0x42, 0x6c, 0x3e, 0xed, 0xf7, 0x69, 0xbb, 0x96, 0xbd, 0x4b}})
+// bootloader_T2T1.bin version 2.0.3.0
+#define BOOTLOADER_T2T1_00 ({uint8_t[] {0xb1, 0x83, 0xd3, 0x31, 0xc7, 0xff, 0x3d, 0xcf, 0x54, 0x1e, 0x7e, 0x40, 0xf4, 0x9e, 0xc3, 0x53, 0x4c, 0xcc, 0xf3, 0x8c, 0x35, 0x39, 0x88, 0x81, 0x65, 0xc0, 0x5c, 0x25, 0xbd, 0xfc, 0xea, 0x14}})
+#define BOOTLOADER_T2T1_FF ({uint8_t[] {0xab, 0xdb, 0x7d, 0xe2, 0xef, 0x44, 0x66, 0xa7, 0xb7, 0x1f, 0x2b, 0x02, 0xf3, 0xe1, 0x40, 0xe7, 0xcd, 0xf2, 0x8e, 0xc0, 0xbb, 0x33, 0x04, 0xce, 0x0d, 0xa5, 0xca, 0x02, 0x57, 0xb6, 0xd4, 0x30}})
+// --- END GENERATED BOOTLOADER SECTION ---
+
+#if defined TREZOR_MODEL_T
+  #if BOOTLOADER_QA
+    // QA bootloaders for T2T1
+    #define BOOTLOADER_00 BOOTLOADER_T2T1_QA_00
+    #define BOOTLOADER_FF BOOTLOADER_T2T1_QA_FF
+  #else
+    // normal bootloaders for T2T1
+    #define BOOTLOADER_00 BOOTLOADER_T2T1_00
+    #define BOOTLOADER_FF BOOTLOADER_T2T1_FF
+  #endif
+#elif defined TREZOR_MODEL_R
+  #if BOOTLOADER_QA
+    // QA bootloaders for T2R1
+    #define BOOTLOADER_00 BOOTLOADER_T2B1_QA_00
+    #define BOOTLOADER_FF BOOTLOADER_T2B1_QA_FF
+  #else
+    // normal bootloaders for T2R1
+    #define BOOTLOADER_00 BOOTLOADER_T2B1_00
+    #define BOOTLOADER_FF BOOTLOADER_T2B1_FF
+  #endif
+#else
+  #error "Cannot select bootloader hashes for unknown model."
+#endif
+// clang-format on
+
 static secbool latest_bootloader(const uint8_t *hash, int len) {
   if (len != 32) return secfalse;
-  // bootloader.bin (padded with 0x00)
-  if (0 ==
-      memcmp(hash,
-             "\xb1\x83\xd3\x31\xc7\xff\x3d\xcf\x54\x1e\x7e\x40\xf4\x9e\xc3\x53"
-             "\x4c\xcc\xf3\x8c\x35\x39\x88\x81\x65\xc0\x5c\x25\xbd\xfc\xea\x14",
-             32))
-    return sectrue;
-  // bootloader.bin (padded with 0xff)
-  if (0 ==
-      memcmp(hash,
-             "\xab\xdb\x7d\xe2\xef\x44\x66\xa7\xb7\x1f\x2b\x02\xf3\xe1\x40\xe7"
-             "\xcd\xf2\x8e\xc0\xbb\x33\x04\xce\x0d\xa5\xca\x02\x57\xb6\xd4\x30",
-             32))
-    return sectrue;
+  if (0 == memcmp(hash, BOOTLOADER_00, 32)) return sectrue;
+  if (0 == memcmp(hash, BOOTLOADER_FF, 32)) return sectrue;
   return secfalse;
 }
 
 void check_and_replace_bootloader(void) {
+#if PRODUCTION || BOOTLOADER_QA
   // compute current bootloader hash
   uint8_t hash[BLAKE2S_DIGEST_LENGTH];
   const uint32_t bl_len = 128 * 1024;
@@ -154,4 +178,5 @@ void check_and_replace_bootloader(void) {
            NULL);
   }
   ensure(flash_lock_write(), NULL);
+#endif
 }
