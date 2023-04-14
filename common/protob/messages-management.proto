@@ -36,6 +36,15 @@ enum HomescreenFormat {
     Jpeg240x240 = 2;
 }
 
+
+/**
+ * Device color
+ */
+enum DeviceColor {
+    Black = 1;
+    White = 2;
+}
+
 /**
  * Request: Reset device to default state and ask for device details
  * @start
@@ -123,6 +132,8 @@ message Features {
     optional bool busy = 41;                    // is the device busy, showing "Do not disconnect"?
     optional HomescreenFormat homescreen_format = 42;   // format of the homescreen, 1 = TOIf 144x144, 2 = jpg 240x240
     optional bool hide_passphrase_from_host = 43;   // should we hide the passphrase when it comes from host?
+    optional DeviceColor device_color = 44;          // color of the device
+    optional bool device_btconly = 45;          // device is intended as bitcoin only
 }
 
 /**

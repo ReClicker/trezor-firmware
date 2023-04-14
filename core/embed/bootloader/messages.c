@@ -25,6 +25,7 @@
 #include "messages.pb.h"
 
 #include "common.h"
+#include "device_variant.h"
 #include "flash.h"
 #include "image.h"
 #include "secbool.h"
@@ -301,7 +302,10 @@ static void send_msg_features(uint8_t iface_num,
     MSG_SEND_ASSIGN_VALUE(fw_patch, ((hdr->version >> 16) & 0xFF));
     MSG_SEND_ASSIGN_STRING_LEN(fw_vendor, vhdr->vstr, vhdr->vstr_len);
   } else {
-    MSG_SEND_ASSIGN_VALUE(firmware_present, false);
+    MSG_SEND_ASSIGN_VALUE(device_color, device_variant_get_color());
+    MSG_SEND_ASSIGN_VALUE(device_btconly, device_variant_get_btconly());
+  }
+  if (device_variant_present()) {
   }
   MSG_SEND(Features);
 }

@@ -44,7 +44,7 @@ def get_features() -> Features:
     import storage.sd_salt as storage_sd_salt
 
     from trezor import sdcard
-    from trezor.enums import Capability
+    from trezor.enums import Capability, DeviceColor
     from trezor.messages import Features
 
     from apps.common import mnemonic, safety_checks
@@ -65,6 +65,10 @@ def get_features() -> Features:
         busy=busy_expiry_ms() > 0,
         homescreen_format=HomescreenFormat.Jpeg240x240,
     )
+
+    if utils.device_variant_present():
+        f.device_color = DeviceColor(utils.device_color())
+        f.device_btconly = utils.device_btconly()
 
     if utils.BITCOIN_ONLY:
         f.capabilities = [

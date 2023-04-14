@@ -177,6 +177,7 @@ CPPPATH_MOD += [
         'vendor/micropython/lib/uzlib',
 ]
 SOURCE_MOD += [
+    'embed/lib/device_variant.c',
     'embed/extmod/modtrezorui/buffers.c',
     'embed/extmod/modtrezorui/colors.c',
     'embed/extmod/modtrezorui/display.c',
@@ -479,6 +480,7 @@ env.Replace(
         '.',
         'embed/rust',
         'embed/firmware',
+        'embed/lib',
         'embed/trezorhal',
         'embed/extmod/modtrezorui',
         'vendor/micropython',

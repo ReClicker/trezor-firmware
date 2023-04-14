@@ -61,6 +61,27 @@ def firmware_vendor() -> str:
 
 
 # extmod/modtrezorutils/modtrezorutils.c
+def device_variant_present() -> bool:
+    """
+    Returns True if the device variant is present.
+    """
+
+
+# extmod/modtrezorutils/modtrezorutils.c
+def device_color() -> int:
+    """
+    Returns the color of the device.
+    """
+
+
+# extmod/modtrezorutils/modtrezorutils.c
+def device_btconly() -> bool:
+    """
+    Returns True if the device is BTConly.
+    """
+
+
+# extmod/modtrezorutils/modtrezorutils.c
 def reboot_to_bootloader() -> None:
     """
     Reboots to bootloader.
