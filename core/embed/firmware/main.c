@@ -59,6 +59,7 @@
 #ifdef USE_SD_CARD
 #include "sdcard.h"
 #endif
+#include "device_variant.h"
 
 #ifdef SYSTEM_VIEW
 #include "systemview.h"
@@ -134,6 +135,8 @@ int main(void) {
 #ifdef USE_SD_CARD
   sdcard_init();
 #endif
+
+  device_variant_init();
 
 #if !defined TREZOR_MODEL_1
   // jump to unprivileged mode

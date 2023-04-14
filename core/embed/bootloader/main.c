@@ -50,6 +50,7 @@
 #include "version.h"
 
 #include "bootui.h"
+#include "device_variant.h"
 #include "messages.h"
 #include "rust_ui.h"
 
@@ -336,6 +337,8 @@ int bootloader_main(void) {
 #ifdef USE_RGB_LED
   rgb_led_init();
 #endif
+
+  device_variant_init();
 
 #if PRODUCTION
   check_bootloader_version();

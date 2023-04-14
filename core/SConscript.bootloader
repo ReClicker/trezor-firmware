@@ -75,6 +75,7 @@ CPPPATH_MOD += [
 ]
 
 SOURCE_MOD += [
+    'embed/lib/device_variant.c',
     'embed/extmod/modtrezorui/buffers.c',
     'embed/extmod/modtrezorui/colors.c',
     'embed/extmod/modtrezorui/display.c',
@@ -204,6 +205,7 @@ env.Replace(
         'embed/bootloader',
         'embed/bootloader/nanopb',
         'embed/bootloader/protob',
+        'embed/lib',
         'embed/trezorhal',
         'embed/extmod/modtrezorui',
         'vendor/micropython/lib/stm32lib/STM32F4xx_HAL_Driver/Inc',

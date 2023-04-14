@@ -411,6 +411,10 @@ if TYPE_CHECKING:
         Toif144x144 = 1
         Jpeg240x240 = 2
 
+    class DeviceColor(IntEnum):
+        Black = 1
+        White = 2
+
     class Capability(IntEnum):
         Bitcoin = 1
         Bitcoin_like = 2

@@ -33,6 +33,7 @@
 #include <string.h>
 #include "blake2s.h"
 #include "common.h"
+#include "device_variant.h"
 #include "flash.h"
 #include "usb.h"
 
@@ -209,6 +210,36 @@ STATIC mp_obj_t mod_trezorutils_firmware_vendor(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_trezorutils_firmware_vendor_obj,
                                  mod_trezorutils_firmware_vendor);
 
+/// def device_variant_present() -> bool:
+///     """
+///     Returns True if the device variant is present.
+///     """
+STATIC mp_obj_t mod_trezorutils_device_variant_present(void) {
+  return device_variant_present() ? mp_const_true : mp_const_false;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_trezorutils_device_variant_present_obj,
+                                 mod_trezorutils_device_variant_present);
+
+/// def device_color() -> int:
+///     """
+///     Returns the color of the device.
+///     """
+STATIC mp_obj_t mod_trezorutils_device_color(void) {
+  return mp_obj_new_int(device_variant_get_color());
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_trezorutils_device_color_obj,
+                                 mod_trezorutils_device_color);
+
+/// def device_btconly() -> bool:
+///     """
+///     Returns True if the device is BTConly.
+///     """
+STATIC mp_obj_t mod_trezorutils_device_btconly(void) {
+  return device_variant_get_btconly() ? mp_const_true : mp_const_false;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_trezorutils_device_btconly_obj,
+                                 mod_trezorutils_device_btconly);
+
 /// def reboot_to_bootloader() -> None:
 ///     """
 ///     Reboots to bootloader.
@@ -257,6 +288,12 @@ STATIC const mp_rom_map_elem_t mp_module_trezorutils_globals_table[] = {
      MP_ROM_PTR(&mod_trezorutils_reboot_to_bootloader_obj)},
     {MP_ROM_QSTR(MP_QSTR_usb_data_connected),
      MP_ROM_PTR(&mod_trezorutils_usb_data_connected_obj)},
+    {MP_ROM_QSTR(MP_QSTR_device_variant_present),
+     MP_ROM_PTR(&mod_trezorutils_device_variant_present_obj)},
+    {MP_ROM_QSTR(MP_QSTR_device_color),
+     MP_ROM_PTR(&mod_trezorutils_device_color_obj)},
+    {MP_ROM_QSTR(MP_QSTR_device_btconly),
+     MP_ROM_PTR(&mod_trezorutils_device_btconly_obj)},
     // various built-in constants
     {MP_ROM_QSTR(MP_QSTR_SCM_REVISION),
      MP_ROM_PTR(&mod_trezorutils_revision_obj)},

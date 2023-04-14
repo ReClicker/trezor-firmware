@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     from trezor.enums import DebugButton  # noqa: F401
     from trezor.enums import DebugSwipeDirection  # noqa: F401
     from trezor.enums import DecredStakingSpendType  # noqa: F401
+    from trezor.enums import DeviceColor  # noqa: F401
     from trezor.enums import EthereumDataType  # noqa: F401
     from trezor.enums import EthereumDefinitionType  # noqa: F401
     from trezor.enums import FailureType  # noqa: F401
@@ -2108,6 +2109,8 @@ if TYPE_CHECKING:
         busy: "bool | None"
         homescreen_format: "HomescreenFormat | None"
         hide_passphrase_from_host: "bool | None"
+        device_color: "DeviceColor | None"
+        device_btconly: "bool | None"
 
         def __init__(
             self,
@@ -2152,6 +2155,8 @@ if TYPE_CHECKING:
             busy: "bool | None" = None,
             homescreen_format: "HomescreenFormat | None" = None,
             hide_passphrase_from_host: "bool | None" = None,
+            device_color: "DeviceColor | None" = None,
+            device_btconly: "bool | None" = None,
         ) -> None:
             pass
 
