@@ -61,21 +61,14 @@ def firmware_vendor() -> str:
 
 
 # extmod/modtrezorutils/modtrezorutils.c
-def device_variant_present() -> bool:
-    """
-    Returns True if the device variant is present.
-    """
-
-
-# extmod/modtrezorutils/modtrezorutils.c
-def device_color() -> int:
+def device_color() -> int | None:
     """
     Returns the color of the device.
     """
 
 
 # extmod/modtrezorutils/modtrezorutils.c
-def device_btconly() -> bool:
+def device_btconly() -> bool | None:
     """
     Returns True if the device is BTConly.
     """

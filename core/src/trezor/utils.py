@@ -11,7 +11,6 @@ from trezorutils import (  # noqa: F401
     consteq,
     device_btconly,
     device_color,
-    device_variant_present,
     firmware_hash,
     firmware_vendor,
     halt,

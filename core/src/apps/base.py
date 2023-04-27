@@ -64,11 +64,9 @@ def get_features() -> Features:
         unlocked=config.is_unlocked(),
         busy=busy_expiry_ms() > 0,
         homescreen_format=HomescreenFormat.Jpeg240x240,
+        device_color=DeviceColor(utils.device_color()),
+        device_btconly=utils.device_btconly(),
     )
-
-    if utils.device_variant_present():
-        f.device_color = DeviceColor(utils.device_color())
-        f.device_btconly = utils.device_btconly()
 
     if utils.BITCOIN_ONLY:
         f.capabilities = [
