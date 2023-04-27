@@ -97,6 +97,8 @@ int main(void) {
 #if !defined TREZOR_MODEL_1
   parse_boardloader_capabilities();
 
+  device_variant_init();
+
 #if PRODUCTION || BOOTLOADER_QA
   check_and_replace_bootloader();
 #endif
@@ -135,8 +137,6 @@ int main(void) {
 #ifdef USE_SD_CARD
   sdcard_init();
 #endif
-
-  device_variant_init();
 
 #if !defined TREZOR_MODEL_1
   // jump to unprivileged mode
