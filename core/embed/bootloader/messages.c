@@ -302,10 +302,11 @@ static void send_msg_features(uint8_t iface_num,
     MSG_SEND_ASSIGN_VALUE(fw_patch, ((hdr->version >> 16) & 0xFF));
     MSG_SEND_ASSIGN_STRING_LEN(fw_vendor, vhdr->vstr, vhdr->vstr_len);
   } else {
-    MSG_SEND_ASSIGN_VALUE(device_color, device_variant_get_color());
-    MSG_SEND_ASSIGN_VALUE(device_btconly, device_variant_get_btconly());
+    MSG_SEND_ASSIGN_VALUE(firmware_present, false);
   }
   if (device_variant_present()) {
+    MSG_SEND_ASSIGN_VALUE(device_color, device_variant_get_color());
+    MSG_SEND_ASSIGN_VALUE(device_btconly, device_variant_get_btconly());
   }
   MSG_SEND(Features);
 }

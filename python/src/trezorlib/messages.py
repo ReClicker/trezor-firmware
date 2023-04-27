@@ -442,11 +442,6 @@ class HomescreenFormat(IntEnum):
     Jpeg240x240 = 2
 
 
-class DeviceColor(IntEnum):
-    Black = 1
-    White = 2
-
-
 class Capability(IntEnum):
     Bitcoin = 1
     Bitcoin_like = 2
@@ -3157,7 +3152,7 @@ class Features(protobuf.MessageType):
         41: protobuf.Field("busy", "bool", repeated=False, required=False, default=None),
         42: protobuf.Field("homescreen_format", "HomescreenFormat", repeated=False, required=False, default=None),
         43: protobuf.Field("hide_passphrase_from_host", "bool", repeated=False, required=False, default=None),
-        44: protobuf.Field("device_color", "DeviceColor", repeated=False, required=False, default=None),
+        44: protobuf.Field("device_color", "uint32", repeated=False, required=False, default=None),
         45: protobuf.Field("device_btconly", "bool", repeated=False, required=False, default=None),
     }
 
@@ -3205,7 +3200,7 @@ class Features(protobuf.MessageType):
         busy: Optional["bool"] = None,
         homescreen_format: Optional["HomescreenFormat"] = None,
         hide_passphrase_from_host: Optional["bool"] = None,
-        device_color: Optional["DeviceColor"] = None,
+        device_color: Optional["int"] = None,
         device_btconly: Optional["bool"] = None,
     ) -> None:
         self.capabilities: Sequence["Capability"] = capabilities if capabilities is not None else []

@@ -10,123 +10,118 @@
 #endif
 
 /* Enum definitions */
-typedef enum _MessageType {
-    MessageType_MessageType_Initialize = 0,
-    MessageType_MessageType_Ping = 1,
-    MessageType_MessageType_Success = 2,
-    MessageType_MessageType_Failure = 3,
-    MessageType_MessageType_FirmwareErase = 6,
-    MessageType_MessageType_FirmwareUpload = 7,
-    MessageType_MessageType_FirmwareRequest = 8,
-    MessageType_MessageType_Features = 17,
-    MessageType_MessageType_ButtonRequest = 26,
-    MessageType_MessageType_ButtonAck = 27,
-    MessageType_MessageType_GetFeatures = 55
+typedef enum _MessageType { 
+    MessageType_MessageType_Initialize = 0, 
+    MessageType_MessageType_Ping = 1, 
+    MessageType_MessageType_Success = 2, 
+    MessageType_MessageType_Failure = 3, 
+    MessageType_MessageType_FirmwareErase = 6, 
+    MessageType_MessageType_FirmwareUpload = 7, 
+    MessageType_MessageType_FirmwareRequest = 8, 
+    MessageType_MessageType_Features = 17, 
+    MessageType_MessageType_ButtonRequest = 26, 
+    MessageType_MessageType_ButtonAck = 27, 
+    MessageType_MessageType_GetFeatures = 55 
 } MessageType;
 
-typedef enum _DeviceColor {
-    DeviceColor_Black = 1,
-    DeviceColor_White = 2
-} DeviceColor;
-
-typedef enum _FailureType {
-    FailureType_Failure_UnexpectedMessage = 1,
-    FailureType_Failure_DataError = 3,
-    FailureType_Failure_ActionCancelled = 4,
-    FailureType_Failure_ProcessError = 9
+typedef enum _FailureType { 
+    FailureType_Failure_UnexpectedMessage = 1, 
+    FailureType_Failure_DataError = 3, 
+    FailureType_Failure_ActionCancelled = 4, 
+    FailureType_Failure_ProcessError = 9 
 } FailureType;
 
-typedef enum _ButtonRequestType {
-    ButtonRequestType_ButtonRequest_Other = 1
+typedef enum _ButtonRequestType { 
+    ButtonRequestType_ButtonRequest_Other = 1 
 } ButtonRequestType;
 
 /* Struct definitions */
-typedef struct _ButtonAck {
+typedef struct _ButtonAck { 
     char dummy_field;
 } ButtonAck;
 
-typedef struct _GetFeatures {
+typedef struct _GetFeatures { 
     char dummy_field;
 } GetFeatures;
 
-typedef struct _Initialize {
+typedef struct _Initialize { 
     char dummy_field;
 } Initialize;
 
-typedef struct _ButtonRequest {
+typedef struct _ButtonRequest { 
     bool has_code;
-    ButtonRequestType code;
+    ButtonRequestType code; 
 } ButtonRequest;
 
-typedef struct _Failure {
+typedef struct _Failure { 
     bool has_code;
-    FailureType code;
+    FailureType code; 
     bool has_message;
-    char message[256];
+    char message[256]; 
 } Failure;
 
 typedef PB_BYTES_ARRAY_T(20) Features_revision_t;
-typedef struct _Features {
+typedef struct _Features { 
     bool has_vendor;
-    char vendor[33];
-    uint32_t major_version;
-    uint32_t minor_version;
-    uint32_t patch_version;
+    char vendor[33]; 
+    uint32_t major_version; 
+    uint32_t minor_version; 
+    uint32_t patch_version; 
     bool has_bootloader_mode;
-    bool bootloader_mode;
+    bool bootloader_mode; 
     bool has_device_id;
-    char device_id[25];
+    char device_id[25]; 
     bool has_language;
-    char language[17];
+    char language[17]; 
     bool has_label;
-    char label[33];
+    char label[33]; 
     bool has_initialized;
-    bool initialized;
+    bool initialized; 
     bool has_revision;
-    Features_revision_t revision;
+    Features_revision_t revision; 
     bool has_firmware_present;
-    bool firmware_present;
+    bool firmware_present; 
     bool has_model;
-    char model[17];
+    char model[17]; 
     bool has_fw_major;
-    uint32_t fw_major;
+    uint32_t fw_major; 
     bool has_fw_minor;
-    uint32_t fw_minor;
+    uint32_t fw_minor; 
     bool has_fw_patch;
-    uint32_t fw_patch;
+    uint32_t fw_patch; 
     bool has_fw_vendor;
-    char fw_vendor[256];
+    char fw_vendor[256]; 
     bool has_device_color;
-    DeviceColor device_color;
+    uint32_t device_color; 
     bool has_device_btconly;
-    bool device_btconly;
+    bool device_btconly; 
 } Features;
 
-typedef struct _FirmwareErase {
+typedef struct _FirmwareErase { 
     bool has_length;
-    uint32_t length;
+    uint32_t length; 
 } FirmwareErase;
 
-typedef struct _FirmwareRequest {
-    uint32_t offset;
-    uint32_t length;
+typedef struct _FirmwareRequest { 
+    uint32_t offset; 
+    uint32_t length; 
 } FirmwareRequest;
 
 typedef PB_BYTES_ARRAY_T(32) FirmwareUpload_hash_t;
-typedef struct _FirmwareUpload {
-    pb_callback_t payload;
+typedef struct _FirmwareUpload { 
+    pb_callback_t payload; 
     bool has_hash;
-    FirmwareUpload_hash_t hash;
+    FirmwareUpload_hash_t hash; 
 } FirmwareUpload;
 
-typedef struct _Ping {
+typedef struct _Ping { 
     bool has_message;
-    char message[256];
+    char message[256]; 
 } Ping;
 
-typedef struct _Success {
+typedef struct _Success { 
     bool has_message;
-    char message[256];
+    char message[256]; 
 } Success;
 
 
@@ -134,10 +129,6 @@ typedef struct _Success {
 #define _MessageType_MIN MessageType_MessageType_Initialize
 #define _MessageType_MAX MessageType_MessageType_GetFeatures
 #define _MessageType_ARRAYSIZE ((MessageType)(MessageType_MessageType_GetFeatures+1))
-
-#define _DeviceColor_MIN DeviceColor_Black
-#define _DeviceColor_MAX DeviceColor_White
-#define _DeviceColor_ARRAYSIZE ((DeviceColor)(DeviceColor_White+1))
 
 #define _FailureType_MIN FailureType_Failure_UnexpectedMessage
 #define _FailureType_MAX FailureType_Failure_ProcessError
@@ -155,7 +146,7 @@ extern "C" {
 /* Initializer values for message structs */
 #define Initialize_init_default                  {0}
 #define GetFeatures_init_default                 {0}
-#define Features_init_default                    {false, "", 0, 0, 0, false, 0, false, "", false, "", false, "", false, 0, false, {0, {0}}, false, 0, false, "", false, 0, false, 0, false, 0, false, "", false, _DeviceColor_MIN, false, 0}
+#define Features_init_default                    {false, "", 0, 0, 0, false, 0, false, "", false, "", false, "", false, 0, false, {0, {0}}, false, 0, false, "", false, 0, false, 0, false, 0, false, "", false, 0, false, 0}
 #define Ping_init_default                        {false, ""}
 #define Success_init_default                     {false, ""}
 #define Failure_init_default                     {false, _FailureType_MIN, false, ""}
@@ -166,7 +157,7 @@ extern "C" {
 #define FirmwareUpload_init_default              {{{NULL}, NULL}, false, {0, {0}}}
 #define Initialize_init_zero                     {0}
 #define GetFeatures_init_zero                    {0}
-#define Features_init_zero                       {false, "", 0, 0, 0, false, 0, false, "", false, "", false, "", false, 0, false, {0, {0}}, false, 0, false, "", false, 0, false, 0, false, 0, false, "", false, _DeviceColor_MIN, false, 0}
+#define Features_init_zero                       {false, "", 0, 0, 0, false, 0, false, "", false, "", false, "", false, 0, false, {0, {0}}, false, 0, false, "", false, 0, false, 0, false, 0, false, "", false, 0, false, 0}
 #define Ping_init_zero                           {false, ""}
 #define Success_init_zero                        {false, ""}
 #define Failure_init_zero                        {false, _FailureType_MIN, false, ""}
@@ -234,10 +225,10 @@ X(a, STATIC,   OPTIONAL, UINT32,   fw_major,         22) \
 X(a, STATIC,   OPTIONAL, UINT32,   fw_minor,         23) \
 X(a, STATIC,   OPTIONAL, UINT32,   fw_patch,         24) \
 X(a, STATIC,   OPTIONAL, STRING,   fw_vendor,        25) \
-X(a, STATIC,   OPTIONAL, UENUM,    device_color,     44) \
+X(a, STATIC,   OPTIONAL, UINT32,   device_color,     44) \
 X(a, STATIC,   OPTIONAL, BOOL,     device_btconly,   45)
 #define Features_CALLBACK NULL
-#define Features_DEFAULT (const pb_byte_t*)"\xe0\x02\x01\x00"
+#define Features_DEFAULT NULL
 
 #define Ping_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, STRING,   message,           1)
@@ -312,7 +303,7 @@ extern const pb_msgdesc_t FirmwareUpload_msg;
 #define ButtonAck_size                           0
 #define ButtonRequest_size                       2
 #define Failure_size                             260
-#define Features_size                            464
+#define Features_size                            468
 #define FirmwareErase_size                       6
 #define FirmwareRequest_size                     12
 #define GetFeatures_size                         0

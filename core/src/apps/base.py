@@ -44,7 +44,7 @@ def get_features() -> Features:
     import storage.sd_salt as storage_sd_salt
 
     from trezor import sdcard
-    from trezor.enums import Capability, DeviceColor
+    from trezor.enums import Capability
     from trezor.messages import Features
 
     from apps.common import mnemonic, safety_checks
@@ -64,7 +64,7 @@ def get_features() -> Features:
         unlocked=config.is_unlocked(),
         busy=busy_expiry_ms() > 0,
         homescreen_format=HomescreenFormat.Jpeg240x240,
-        device_color=DeviceColor(utils.device_color()),
+        device_color=utils.device_color(),
         device_btconly=utils.device_btconly(),
     )
 

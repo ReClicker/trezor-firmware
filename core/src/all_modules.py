@@ -103,8 +103,6 @@ trezor.enums.DebugSwipeDirection
 import trezor.enums.DebugSwipeDirection
 trezor.enums.DecredStakingSpendType
 import trezor.enums.DecredStakingSpendType
-trezor.enums.DeviceColor
-import trezor.enums.DeviceColor
 trezor.enums.FailureType
 import trezor.enums.FailureType
 trezor.enums.HomescreenFormat
