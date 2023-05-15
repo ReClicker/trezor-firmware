@@ -1,14 +1,10 @@
 use super::{
     theme, Button, ButtonDetails, ButtonLayout, ButtonPos, HoldToConfirm, HoldToConfirmMsg,
-    LoaderStyleSheet,
 };
-use crate::{
-    time::Duration,
-    ui::{
-        component::{base::Event, Component, EventCtx, Pad},
-        event::{ButtonEvent, PhysicalButton},
-        geometry::Rect,
-    },
+use crate::ui::{
+    component::{base::Event, Component, EventCtx, Pad},
+    event::{ButtonEvent, PhysicalButton},
+    geometry::Rect,
 };
 
 /// All possible states buttons (left and right) can be at.
@@ -60,37 +56,12 @@ where
     pub fn from_button_details(pos: ButtonPos, btn_details: Option<ButtonDetails<T>>) -> Self {
         if let Some(btn_details) = btn_details {
             if btn_details.duration.is_some() {
-                Self::HoldToConfirm(Self::get_hold_to_confirm(pos, btn_details))
+                Self::HoldToConfirm(HoldToConfirm::from_button_details(pos, btn_details))
             } else {
-                Self::Button(Self::get_button(pos, btn_details))
+                Self::Button(Button::from_button_details(pos, btn_details))
             }
         } else {
             Self::Nothing
-        }
-    }
-
-    /// Create `Button` component from `btn_details`.
-    fn get_button(pos: ButtonPos, btn_details: ButtonDetails<T>) -> Button<T> {
-        // Deciding between text and icon
-
-        if let Some(text) = btn_details.text.clone() {
-            Button::with_text(pos, text, btn_details.style())
-        } else if let Some(icon) = btn_details.icon {
-            Button::with_icon(pos, icon, btn_details.style())
-        } else {
-            panic!("ButtonContainer: no text or icon provided");
-        }
-    }
-
-    /// Create `HoldToConfirm` component from `btn_details`.
-    fn get_hold_to_confirm(pos: ButtonPos, btn_details: ButtonDetails<T>) -> HoldToConfirm<T> {
-        let duration = btn_details
-            .duration
-            .unwrap_or_else(|| Duration::from_millis(1000));
-        if let Some(text) = btn_details.text {
-            HoldToConfirm::text(pos, text, LoaderStyleSheet::default_loader(), duration)
-        } else {
-            panic!("ButtonContainer: only text supported for HTC");
         }
     }
 

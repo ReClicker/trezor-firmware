@@ -7,7 +7,9 @@ use crate::{
     },
 };
 
-use super::{loader::Loader, theme, ButtonPos, LoaderMsg, LoaderStyleSheet};
+use super::{
+    loader::Loader, theme, ButtonContent, ButtonDetails, ButtonPos, LoaderMsg, LoaderStyleSheet,
+};
 
 pub enum HoldToConfirmMsg {
     Confirmed,
@@ -33,6 +35,18 @@ where
             pos,
             loader: Loader::text(text, styles).with_growing_duration(duration),
             text_width,
+        }
+    }
+
+    pub fn from_button_details(pos: ButtonPos, btn_details: ButtonDetails<T>) -> Self {
+        let duration = btn_details
+            .duration
+            .unwrap_or_else(|| Duration::from_millis(1000));
+        match btn_details.content {
+            ButtonContent::Text(text) => {
+                Self::text(pos, text, LoaderStyleSheet::default_loader(), duration)
+            }
+            ButtonContent::Icon(_) => panic!("Icon is not supported"),
         }
     }
 

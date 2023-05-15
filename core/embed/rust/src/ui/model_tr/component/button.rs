@@ -41,7 +41,7 @@ where
 
 impl<T> Button<T>
 where
-    T: AsRef<str>,
+    T: AsRef<str> + Clone,
 {
     pub fn new(pos: ButtonPos, content: ButtonContent<T>, styles: ButtonStyleSheet) -> Self {
         Self {
@@ -50,6 +50,15 @@ where
             styles,
             bounds: Rect::zero(),
             state: State::Released,
+        }
+    }
+
+    pub fn from_button_details(pos: ButtonPos, btn_details: ButtonDetails<T>) -> Self {
+        // Deciding between text and icon
+        let style = btn_details.style();
+        match btn_details.content {
+            ButtonContent::Text(text) => Self::with_text(pos, text, style),
+            ButtonContent::Icon(icon) => Self::with_icon(pos, icon, style),
         }
     }
 
@@ -174,7 +183,7 @@ where
 
 impl<T> Component for Button<T>
 where
-    T: AsRef<str>,
+    T: AsRef<str> + Clone,
 {
     type Msg = ButtonMsg;
 
@@ -282,6 +291,7 @@ enum State {
     Pressed,
 }
 
+#[derive(Clone)]
 pub enum ButtonContent<T> {
     Text(T),
     Icon(Icon),
@@ -351,21 +361,19 @@ impl ButtonStyleSheet {
 /// Describing the button on the screen - only visuals.
 #[derive(Clone)]
 pub struct ButtonDetails<T> {
-    pub text: Option<T>,
-    pub icon: Option<Icon>,
+    pub content: ButtonContent<T>,
     pub duration: Option<Duration>,
-    pub with_outline: bool,
-    pub with_arms: bool,
-    pub fixed_width: Option<i16>,
-    pub offset: Offset,
+    with_outline: bool,
+    with_arms: bool,
+    fixed_width: Option<i16>,
+    offset: Offset,
 }
 
 impl<T> ButtonDetails<T> {
     /// Text button.
     pub fn text(text: T) -> Self {
         Self {
-            text: Some(text),
-            icon: None,
+            content: ButtonContent::Text(text),
             duration: None,
             with_outline: true,
             with_arms: false,
@@ -377,8 +385,7 @@ impl<T> ButtonDetails<T> {
     /// Icon button.
     pub fn icon(icon: Icon) -> Self {
         Self {
-            text: None,
-            icon: Some(icon),
+            content: ButtonContent::Icon(icon),
             duration: None,
             with_outline: true,
             with_arms: false,
@@ -914,10 +921,9 @@ where
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ButtonDetails");
         let mut btn_text: String<30> = String::new();
-        if let Some(text) = &self.text {
-            unwrap!(btn_text.push_str(text.as_ref()));
-        } else if self.icon.is_some() {
-            unwrap!(btn_text.push_str("Icon"));
+        match &self.content {
+            ButtonContent::Text(text) => unwrap!(btn_text.push_str(text.as_ref())),
+            ButtonContent::Icon(_) => unwrap!(btn_text.push_str("Icon")),
         }
         if let Some(duration) = &self.duration {
             unwrap!(btn_text.push_str(" (HTC:"));
