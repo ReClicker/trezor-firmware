@@ -48,9 +48,7 @@ where
     T: StringType,
 {
     pub fn new(label: T, notification: Option<(T, u8)>) -> Self {
-        // NOTE: for some reason the text cannot be empty string, it was panicking at
-        // library/core/src/str/mod.rs:107
-        let invisible_btn_layout = ButtonLayout::htc_none_htc("_".into(), "_".into());
+        let invisible_btn_layout = ButtonLayout::htc_none_htc("".into(), "".into());
         Self {
             label,
             notification,
@@ -183,7 +181,7 @@ where
     T: StringType,
 {
     pub fn new(label: T, bootscreen: bool) -> Self {
-        let invisible_btn_layout = ButtonLayout::text_none_text("_".into(), "_".into());
+        let invisible_btn_layout = ButtonLayout::text_none_text("".into(), "".into());
         Lockscreen {
             label,
             bootscreen,
