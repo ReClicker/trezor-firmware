@@ -50,7 +50,7 @@ where
         let mut possible_rest = text_multiline_split_words(
             self.area,
             HEADER,
-            Font::NORMAL,
+            Font::BOLD,
             theme::FG,
             theme::BG,
             Alignment::Center,
@@ -87,6 +87,8 @@ where
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("CoinJoinProgress");
+        t.string("header", HEADER);
         t.string("text", self.text.as_ref());
+        t.string("footer", FOOTER);
     }
 }
