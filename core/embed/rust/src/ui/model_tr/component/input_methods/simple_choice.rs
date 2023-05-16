@@ -10,8 +10,7 @@ use super::super::{ButtonLayout, ChoiceFactory, ChoiceItem, ChoicePage, ChoicePa
 use heapless::{String, Vec};
 
 pub enum SimpleChoiceMsg {
-    Result(String<50>),
-    Index(usize),
+    ResultIndex(usize),
 }
 
 struct ChoiceFactorySimple<const N: usize, T> {
@@ -62,7 +61,7 @@ where
 {
     choices: Vec<T, N>,
     choice_page: ChoicePage<ChoiceFactorySimple<N, T>, T>,
-    return_index: bool,
+    pub return_index: bool,
 }
 
 impl<const N: usize, T> SimpleChoice<N, T>
@@ -95,6 +94,11 @@ where
         self.return_index = true;
         self
     }
+
+    /// Translating the resulting index into actual string choice.
+    pub fn result_by_index(&self, index: usize) -> &str {
+        self.choices[index].as_ref()
+    }
 }
 
 impl<const N: usize, T> Component for SimpleChoice<N, T>
@@ -108,15 +112,9 @@ where
     }
 
     fn event(&mut self, ctx: &mut EventCtx, event: Event) -> Option<Self::Msg> {
-        let msg = self.choice_page.event(ctx, event);
-        match msg {
+        match self.choice_page.event(ctx, event) {
             Some(ChoicePageMsg::Choice(page_counter)) => {
-                if self.return_index {
-                    Some(SimpleChoiceMsg::Index(page_counter))
-                } else {
-                    let result = String::from(self.choices[page_counter].as_ref());
-                    Some(SimpleChoiceMsg::Result(result))
-                }
+                Some(SimpleChoiceMsg::ResultIndex(page_counter))
             }
             _ => None,
         }

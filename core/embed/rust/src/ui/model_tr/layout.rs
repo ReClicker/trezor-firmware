@@ -185,8 +185,10 @@ where
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
-            SimpleChoiceMsg::Result(choice) => choice.as_str().try_into(),
-            SimpleChoiceMsg::Index(index) => index.try_into(),
+            SimpleChoiceMsg::ResultIndex(index) => match self.return_index {
+                true => index.try_into(),
+                false => self.result_by_index(index).try_into(),
+            },
         }
     }
 }
