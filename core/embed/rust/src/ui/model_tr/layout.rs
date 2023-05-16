@@ -27,7 +27,7 @@ use crate::{
                 },
                 TextStyle,
             },
-            ComponentExt, LineBreaking, Timeout,
+            ComponentExt, LineBreaking, Timeout, TimeoutMsg,
         },
         display::{self, Font, Icon},
         geometry::Alignment,
@@ -135,8 +135,6 @@ where
     }
 }
 
-// Clippy complains about conflicting implementations
-#[cfg(not(feature = "clippy"))]
 impl<T> ComponentMsgObj for (Timeout, T)
 where
     T: Component<Msg = TimeoutMsg>,
@@ -179,7 +177,7 @@ where
     }
 }
 
-impl<const N: usize, T> ComponentMsgObj for SimpleChoice<N, T>
+impl<T> ComponentMsgObj for SimpleChoice<T>
 where
     T: StringType,
 {
@@ -1026,7 +1024,8 @@ extern "C" fn new_select_word(n_args: usize, args: *const Obj, kwargs: *mut Map)
         // we ignore passed in `title` and use `description` in its place
         let description: StrBuffer = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
         let words_iterable: Obj = kwargs.get(Qstr::MP_QSTR_words)?;
-        let words: Vec<StrBuffer, 3> = iter_into_vec(words_iterable)?;
+        // There are only 3 words, but SimpleChoice requires 5 elements
+        let words: Vec<StrBuffer, 5> = iter_into_vec(words_iterable)?;
 
         // Returning the index of the selected word, not the word itself
         let obj = LayoutObj::new(

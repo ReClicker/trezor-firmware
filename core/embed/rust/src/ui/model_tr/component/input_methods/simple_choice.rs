@@ -13,25 +13,29 @@ pub enum SimpleChoiceMsg {
     ResultIndex(usize),
 }
 
-struct ChoiceFactorySimple<const N: usize, T> {
-    choices: Vec<T, N>,
+// So that there is only one implementation, and not multiple generic ones
+// as would be via `const N: usize` generics.
+const MAX_LENGTH: usize = 5;
+
+struct ChoiceFactorySimple<T> {
+    choices: Vec<T, MAX_LENGTH>,
     carousel: bool,
 }
 
-impl<const N: usize, T> ChoiceFactorySimple<N, T> {
-    fn new(choices: Vec<T, N>, carousel: bool) -> Self {
+impl<T> ChoiceFactorySimple<T> {
+    fn new(choices: Vec<T, MAX_LENGTH>, carousel: bool) -> Self {
         Self { choices, carousel }
     }
 }
 
-impl<const N: usize, T> ChoiceFactory<T> for ChoiceFactorySimple<N, T>
+impl<T> ChoiceFactory<T> for ChoiceFactorySimple<T>
 where
     T: StringType,
 {
     type Item = ChoiceItem<T>;
 
     fn count(&self) -> usize {
-        N
+        self.choices.len()
     }
 
     fn get(&self, choice_index: usize) -> ChoiceItem<T> {
@@ -44,7 +48,7 @@ where
             if choice_index == 0 {
                 choice_item.set_left_btn(None);
             }
-            if choice_index == N - 1 {
+            if choice_index == self.count() - 1 {
                 choice_item.set_right_btn(None);
             }
         }
@@ -55,20 +59,20 @@ where
 
 /// Simple wrapper around `ChoicePage` that allows for
 /// inputting a list of values and receiving the chosen one.
-pub struct SimpleChoice<const N: usize, T>
+pub struct SimpleChoice<T>
 where
     T: StringType,
 {
-    choices: Vec<T, N>,
-    choice_page: ChoicePage<ChoiceFactorySimple<N, T>, T>,
+    choices: Vec<T, MAX_LENGTH>,
+    choice_page: ChoicePage<ChoiceFactorySimple<T>, T>,
     pub return_index: bool,
 }
 
-impl<const N: usize, T> SimpleChoice<N, T>
+impl<T> SimpleChoice<T>
 where
     T: StringType,
 {
-    pub fn new(str_choices: Vec<T, N>, carousel: bool) -> Self {
+    pub fn new(str_choices: Vec<T, MAX_LENGTH>, carousel: bool) -> Self {
         let choices = ChoiceFactorySimple::new(str_choices.clone(), carousel);
         Self {
             choices: str_choices,
@@ -101,7 +105,7 @@ where
     }
 }
 
-impl<const N: usize, T> Component for SimpleChoice<N, T>
+impl<T> Component for SimpleChoice<T>
 where
     T: StringType,
 {
@@ -131,7 +135,7 @@ where
 use super::super::{ButtonAction, ButtonPos};
 
 #[cfg(feature = "ui_debug")]
-impl<const N: usize, T> crate::trace::Trace for SimpleChoice<N, T>
+impl<T> crate::trace::Trace for SimpleChoice<T>
 where
     T: StringType,
 {

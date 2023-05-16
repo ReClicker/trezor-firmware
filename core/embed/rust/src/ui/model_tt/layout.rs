@@ -339,6 +339,8 @@ where
     }
 }
 
+// Clippy/compiler complains about conflicting implementations
+#[cfg(not(feature = "clippy"))]
 impl<T> ComponentMsgObj for (Timeout, T)
 where
     T: Component<Msg = TimeoutMsg>,
