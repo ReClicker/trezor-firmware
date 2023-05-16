@@ -18,24 +18,25 @@ const NUMBER_WORD_OFFSET: i16 = 20;
 const NUMBER_FONT: Font = Font::DEMIBOLD;
 const WORD_FONT: Font = Font::NORMAL;
 const INFO_TOP_OFFSET: i16 = 15;
+const MAX_WORDS: usize = 33; // super-shamir has 33 words, all other have less
 
 /// Showing the given share words.
-pub struct ShareWords<const N: usize, T>
+pub struct ShareWords<T>
 where
     T: StringType,
 {
     area: Rect,
     title: Child<Title<T>>,
     scrollbar: Child<ScrollBar>,
-    share_words: Vec<T, N>,
+    share_words: Vec<T, MAX_WORDS>,
     page_index: usize,
 }
 
-impl<const N: usize, T> ShareWords<N, T>
+impl<T> ShareWords<T>
 where
     T: StringType,
 {
-    pub fn new(title: T, share_words: Vec<T, N>) -> Self {
+    pub fn new(title: T, share_words: Vec<T, MAX_WORDS>) -> Self {
         let mut instance = Self {
             area: Rect::zero(),
             title: Child::new(Title::new(title)),
@@ -151,7 +152,7 @@ where
     }
 }
 
-impl<const N: usize, T> Component for ShareWords<N, T>
+impl<T> Component for ShareWords<T>
 where
     T: StringType,
 {
@@ -193,7 +194,7 @@ where
     }
 }
 
-impl<const N: usize, T> Paginate for ShareWords<N, T>
+impl<T> Paginate for ShareWords<T>
 where
     T: StringType,
 {
@@ -211,7 +212,7 @@ where
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-impl<const N: usize, T> crate::trace::Trace for ShareWords<N, T>
+impl<T> crate::trace::Trace for ShareWords<T>
 where
     T: StringType,
 {
