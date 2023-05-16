@@ -194,7 +194,6 @@ class RustLayout(ui.Layout):
 
     def _first_paint(self) -> None:
         # Clear the screen of any leftovers.
-        ui.backlight_fade(ui.style.BACKLIGHT_DIM)
         ui.display.clear()
         self._paint()
 
@@ -215,9 +214,6 @@ class RustLayout(ui.Layout):
                 debug_storage.new_layout_event_id = None
 
             notify_layout_change(self, event_id)
-
-        # Turn the brightness on again.
-        ui.backlight_fade(self.BACKLIGHT_LEVEL)
 
     def handle_input_and_rendering(self) -> loop.Task:  # type: ignore [awaitable-is-generator]
         from trezor import workflow
@@ -257,11 +253,9 @@ def draw_simple(layout: Any) -> None:
         raise RuntimeError
 
     layout.attach_timer_fn(dummy_set_timer)
-    ui.backlight_fade(ui.style.BACKLIGHT_DIM)
     ui.display.clear()
     layout.paint()
     ui.refresh()
-    ui.backlight_fade(ui.style.BACKLIGHT_NORMAL)
 
 
 # Temporary function, so we know where it is used
