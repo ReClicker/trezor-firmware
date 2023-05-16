@@ -81,7 +81,7 @@ pub use input_methods::{
     wordlist::{WordlistEntry, WordlistEntryMsg, WordlistType},
 };
 #[cfg(feature = "micropython")]
-pub use no_btn_dialog::{NoBtnDialog, NoBtnDialogMsg};
+pub use no_btn_dialog::NoBtnDialog;
 #[cfg(feature = "micropython")]
 pub use page::ButtonPage;
 #[cfg(feature = "micropython")]

@@ -1,29 +1,26 @@
 use crate::ui::{
-    component::{Child, Component, Event, EventCtx},
+    component::{Child, Component, Event, EventCtx, Timeout, TimeoutMsg},
     geometry::Rect,
 };
 
-pub enum NoBtnDialogMsg<T> {
-    Controls(T),
-}
+use super::super::layout::CancelConfirmMsg;
 
 /// Used for simple displaying of information without user interaction.
 /// Suitable for just showing a message, or having a timeout after which
 /// the dialog is dismissed.
-pub struct NoBtnDialog<T, U> {
+pub struct NoBtnDialog<T> {
     content: Child<T>,
-    controls: Child<U>,
+    timeout: Option<Timeout>,
 }
 
-impl<T, U> NoBtnDialog<T, U>
+impl<T> NoBtnDialog<T>
 where
     T: Component,
-    U: Component,
 {
-    pub fn new(content: T, controls: U) -> Self {
+    pub fn new(content: T, timeout: Option<Timeout>) -> Self {
         Self {
             content: Child::new(content),
-            controls: Child::new(controls),
+            timeout,
         }
     }
 
@@ -32,36 +29,37 @@ where
     }
 }
 
-impl<T, U> Component for NoBtnDialog<T, U>
+impl<T> Component for NoBtnDialog<T>
 where
     T: Component,
-    U: Component,
 {
-    type Msg = NoBtnDialogMsg<U::Msg>;
+    type Msg = CancelConfirmMsg;
 
     fn place(&mut self, bounds: Rect) -> Rect {
-        self.controls.place(bounds);
+        self.timeout.place(bounds);
         self.content.place(bounds);
         bounds
     }
 
     fn event(&mut self, ctx: &mut EventCtx, event: Event) -> Option<Self::Msg> {
-        self.controls.event(ctx, event).map(Self::Msg::Controls)
+        if let Some(TimeoutMsg::TimedOut) = self.timeout.event(ctx, event) {
+            return Some(CancelConfirmMsg::Confirmed);
+        }
+        None
     }
 
     fn paint(&mut self) {
         self.content.paint();
-        self.controls.paint();
+        self.timeout.paint();
     }
 }
 
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-impl<T, U> crate::trace::Trace for NoBtnDialog<T, U>
+impl<T> crate::trace::Trace for NoBtnDialog<T>
 where
     T: crate::trace::Trace,
-    U: crate::trace::Trace,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("NoBtnDialog");

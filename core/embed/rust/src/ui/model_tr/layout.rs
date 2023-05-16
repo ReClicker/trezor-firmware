@@ -27,7 +27,7 @@ use crate::{
                 },
                 TextStyle,
             },
-            ComponentExt, Empty, LineBreaking, Timeout, TimeoutMsg,
+            ComponentExt, LineBreaking, Timeout,
         },
         display::{self, Font, Icon},
         geometry::Alignment,
@@ -46,10 +46,10 @@ use super::{
     component::{
         AddressDetails, AddressDetailsMsg, ButtonActions, ButtonDetails, ButtonLayout, ButtonPage,
         CancelInfoConfirmMsg, CoinJoinProgress, Flow, FlowMsg, FlowPages, Frame, Homescreen,
-        HomescreenMsg, Lockscreen, NoBtnDialog, NoBtnDialogMsg, NumberInput, NumberInputMsg, Page,
-        PassphraseEntry, PassphraseEntryMsg, PinEntry, PinEntryMsg, Progress, ScrollableContent,
-        ScrollableFrame, ShareWords, ShowMore, SimpleChoice, SimpleChoiceMsg, WelcomeScreen,
-        WordlistEntry, WordlistEntryMsg, WordlistType,
+        HomescreenMsg, Lockscreen, NoBtnDialog, NumberInput, NumberInputMsg, Page, PassphraseEntry,
+        PassphraseEntryMsg, PinEntry, PinEntryMsg, Progress, ScrollableContent, ScrollableFrame,
+        ShareWords, ShowMore, SimpleChoice, SimpleChoiceMsg, WelcomeScreen, WordlistEntry,
+        WordlistEntryMsg, WordlistType,
     },
     constant, theme,
 };
@@ -84,16 +84,12 @@ where
     }
 }
 
-impl<T, U> ComponentMsgObj for NoBtnDialog<T, U>
+impl<T> ComponentMsgObj for NoBtnDialog<T>
 where
     T: Component,
-    U: Component,
-    <U as Component>::Msg: TryInto<Obj, Error = Error>,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
-        match msg {
-            NoBtnDialogMsg::Controls(msg) => msg.try_into(),
-        }
+        msg.try_into()
     }
 }
 
@@ -883,15 +879,11 @@ extern "C" fn new_show_info(n_args: usize, args: *const Obj, kwargs: *mut Map) -
         let obj = if time_ms == 0 {
             // No timer, used when we only want to draw the dialog once and
             // then throw away the layout object.
-            LayoutObj::new(NoBtnDialog::new(content, Empty))?
+            LayoutObj::new(NoBtnDialog::new(content, None))?
         } else {
             // Timeout.
-            LayoutObj::new(NoBtnDialog::new(
-                content,
-                Timeout::new(time_ms).map(|msg| {
-                    (matches!(msg, TimeoutMsg::TimedOut)).then(|| CancelConfirmMsg::Confirmed)
-                }),
-            ))?
+            let timeout = Timeout::new(time_ms);
+            LayoutObj::new(NoBtnDialog::new(content, Some(timeout)))?
         };
 
         Ok(obj.into())
