@@ -178,11 +178,12 @@ where
 
     fn event(&mut self, ctx: &mut EventCtx, event: Event) -> Option<Self::Msg> {
         let msg = self.content.event(ctx, event);
-        self.scrollbar
-            .set_active_page(self.content.inner().active_page());
-        self.scrollbar.request_complete_repaint(ctx);
+        let content_active_page = self.content.inner().active_page();
+        if self.scrollbar.active_page != content_active_page {
+            self.scrollbar.set_active_page(content_active_page);
+            self.scrollbar.request_complete_repaint(ctx);
+        }
         self.title.event(ctx, event);
-        self.scrollbar.event(ctx, event);
         msg
     }
 
