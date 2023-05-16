@@ -275,8 +275,6 @@ async def show_warning_backup(ctx: GenericContext, slip39: bool) -> None:
 
 
 async def show_success_backup(ctx: GenericContext) -> None:
-    from . import confirm_action
-
     await confirm_action(
         ctx,
         "success_backup",
