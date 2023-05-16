@@ -62,7 +62,7 @@ where
 
         // Action buttons have different middle button text
         if [DELETE_INDEX, SHOW_INDEX, ENTER_INDEX].contains(&(choice_index)) {
-            let confirm_btn = ButtonDetails::armed_text("CONFIRM".into());
+            let confirm_btn = ButtonDetails::armed_text("CONFIRM");
             choice_item.set_middle_btn(Some(confirm_btn));
         }
 

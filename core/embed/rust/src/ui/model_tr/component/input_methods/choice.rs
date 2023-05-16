@@ -1,14 +1,14 @@
-#[cfg(feature = "ui_debug")]
-use crate::{
+use crate::ui::{
+    component::{Child, Component, Event, EventCtx, Pad},
+    geometry::{Offset, Rect},
     maybe_trace::MaybeTrace,
     strutil::StringType,
-    ui::{
-        component::{Child, Component, Event, EventCtx, Pad},
-        geometry::Rect,
-    },
 };
 
-use super::super::{theme, ButtonController, ButtonControllerMsg, ButtonLayout, ButtonPos};
+use super::{
+    super::{theme, ButtonController, ButtonControllerMsg, ButtonLayout, ButtonPos},
+    choice_item::ChoiceItem,
+};
 
 pub enum ChoicePageMsg {
     Choice(usize),
@@ -24,16 +24,12 @@ where
     T: StringType,
 {
     fn paint_center(&self, area: Rect, inverse: bool);
-    fn width_center(&self) -> i16 {
-        0
-    }
-    fn paint_left(&self, _area: Rect, _show_incomplete: bool) -> Option<i16> {
-        None
-    }
-    fn paint_right(&self, _area: Rect, _show_incomplete: bool) -> Option<i16> {
-        None
-    }
-    fn btn_layout(&self) -> ButtonLayout<T> {
+    fn width_center(&self) -> i16;
+
+    fn paint_side(&self, area: Rect);
+    fn width_side(&self) -> i16;
+
+    fn btn_layout(&self) -> ButtonLayout<&'static str> {
         ButtonLayout::default_three_icons()
     }
 }
@@ -53,7 +49,7 @@ where
 {
     type Item: Choice<T> + MaybeTrace;
     fn count(&self) -> usize;
-    fn get(&self, index: usize) -> Self::Item;
+    fn get(&self, index: usize) -> ChoiceItem;
 }
 
 /// General component displaying a set of items on the screen
@@ -69,14 +65,14 @@ where
 ///
 /// `is_carousel` can be used to make the choice page "infinite" -
 /// after reaching one end, users will appear at the other end.
-pub struct ChoicePage<F, T>
+pub struct ChoicePage<F>
 where
     F: ChoiceFactory<T>,
     T: StringType,
 {
     choices: F,
     pad: Pad,
-    buttons: Child<ButtonController<T>>,
+    buttons: Child<ButtonController<&'static str>>,
     page_counter: usize,
     /// How many pixels from top should we render the items.
     y_baseline: i16,
@@ -94,7 +90,7 @@ where
     inverse_selected_item: bool,
 }
 
-impl<F, T> ChoicePage<F, T>
+impl<F> ChoicePage<F>
 where
     F: ChoiceFactory<T>,
     T: StringType,
@@ -253,8 +249,8 @@ where
     fn show_left_choices(&self, area: Rect) {
         // page index can get negative here, so having it as i16 instead of usize
         let mut page_index = self.page_counter as i16 - 1;
-        let mut x_offset = 0;
-        loop {
+        let mut current_area = area.split_right(self.items_distance).0;
+        while current_area.width() > 0 {
             // Breaking out of the loop if we exhausted left items
             // and the carousel mode is not enabled.
             if page_index < 0 {
@@ -266,19 +262,39 @@ where
                 }
             }
 
-            let current_area = area.split_right(x_offset + self.items_distance).0;
+            let choice = self.choices.get(page_index as usize);
+            let choice_width = choice.width_side();
 
-            if let Some(width) = self
-                .choices
-                .get(page_index as usize)
-                .paint_left(current_area, self.show_incomplete)
-            {
-                // Updating loop variables.
-                x_offset += width + self.items_distance;
-                page_index -= 1;
-            } else {
+            if current_area.width() <= choice_width && !self.show_incomplete {
+                // early break for an item that will not fit the remaining space
                 break;
             }
+
+            // We need to calculate the area explicitly because we want to allow it
+            // to exceed the bounds of the original area.
+            let choice_area = Rect::from_top_right_and_size(
+                current_area.top_right(),
+                Offset::new(choice_width, current_area.height()),
+            );
+            choice.paint_side(choice_area);
+
+            // Updating loop variables.
+            current_area = current_area
+                .split_right(choice_width + self.items_distance)
+                .0;
+            page_index -= 1;
+
+            // if let Some(width) = self
+            //     .choices
+            //     .get(page_index as usize)
+            //     .paint_left(current_area, self.show_incomplete)
+            // {
+            //     // Updating loop variables.
+            //     x_offset += width + self.items_distance;
+            //     page_index -= 1;
+            // } else {
+            //     break;
+            // }
         }
     }
 
@@ -286,8 +302,9 @@ where
     /// Going as far as possible.
     fn show_right_choices(&self, area: Rect) {
         let mut page_index = self.page_counter + 1;
-        let mut x_offset = 3; // starts with a little offset to account for the middle highlight
-        loop {
+        // start with a little offset to account for the middle highlight
+        let mut current_area = area.split_left(self.items_distance + 3).1;
+        while current_area.width() > 0 {
             // Breaking out of the loop if we exhausted right items
             // and the carousel mode is not enabled.
             if page_index > self.last_page_index() {
@@ -298,19 +315,43 @@ where
                     break;
                 }
             }
-            let current_area = area.split_left(x_offset + self.items_distance).1;
 
-            if let Some(width) = self
-                .choices
-                .get(page_index)
-                .paint_right(current_area, self.show_incomplete)
-            {
-                // Updating loop variables.
-                x_offset += width + self.items_distance;
-                page_index += 1;
-            } else {
+            let choice = self.choices.get(page_index);
+            let choice_width = choice.width_side();
+
+            if current_area.width() <= choice_width && !self.show_incomplete {
+                // early break for an item that will not fit the remaining space
                 break;
             }
+
+            // We need to calculate the area explicitly because we want to allow it
+            // to exceed the bounds of the original area.
+            let choice_area = Rect::from_top_left_and_size(
+                current_area.top_left(),
+                Offset::new(choice_width, current_area.height()),
+            );
+            choice.paint_side(choice_area);
+
+            // Updating loop variables.
+            current_area = current_area
+                .split_left(choice_width + self.items_distance)
+                .1;
+            page_index += 1;
+
+            // let current_area = area.split_left(x_offset +
+            // self.items_distance).1;
+
+            // if let Some(width) = self
+            //     .choices
+            //     .get(page_index)
+            //     .paint_right(current_area, self.show_incomplete)
+            // {
+            //     // Updating loop variables.
+            //     x_offset += width + self.items_distance;
+            //     page_index += 1;
+            // } else {
+            //     break;
+            // }
         }
     }
 
@@ -351,7 +392,7 @@ where
     }
 }
 
-impl<F, T> Component for ChoicePage<F, T>
+impl<F> Component for ChoicePage<F>
 where
     F: ChoiceFactory<T>,
     T: StringType,
@@ -427,7 +468,7 @@ where
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-impl<F, T> crate::trace::Trace for ChoicePage<F, T>
+impl<F> crate::trace::Trace for ChoicePage<F>
 where
     F: ChoiceFactory<T>,
     T: StringType,

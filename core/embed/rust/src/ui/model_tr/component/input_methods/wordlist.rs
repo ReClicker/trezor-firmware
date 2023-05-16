@@ -52,16 +52,6 @@ impl ChoiceFactoryWordlist {
     fn words(word_choices: Vec<&'static str, OFFER_WORDS_THRESHOLD>) -> Self {
         Self::Words(word_choices)
     }
-
-    /// NOTE: done to remediate some type-inconsistencies
-    /// with using self.count() in self.get()
-    fn self_count(&self) -> usize {
-        // Accounting for the DELETE option
-        match self {
-            Self::Letters(letter_choices) => letter_choices.len() + 1,
-            Self::Words(word_choices) => word_choices.len() + 1,
-        }
-    }
 }
 
 impl<T> ChoiceFactory<T> for ChoiceFactoryWordlist
@@ -71,7 +61,11 @@ where
     type Item = ChoiceItem<T>;
 
     fn count(&self) -> usize {
-        self.self_count()
+        // Accounting for the DELETE option
+        match self {
+            Self::Letters(letter_choices) => letter_choices.len() + 1,
+            Self::Words(word_choices) => word_choices.len() + 1,
+        }
     }
 
     fn get(&self, choice_index: usize) -> ChoiceItem<T> {
@@ -81,7 +75,7 @@ where
         match self {
             Self::Letters(letter_choices) => {
                 if choice_index == DELETE_INDEX {
-                    ChoiceItem::new("DELETE", ButtonLayout::arrow_armed_arrow("CONFIRM".into()))
+                    ChoiceItem::new("DELETE", ButtonLayout::arrow_armed_arrow("CONFIRM"))
                         .with_icon(Icon::new(theme::ICON_DELETE))
                 } else {
                     let letter = letter_choices[choice_index - 1];
@@ -93,12 +87,12 @@ where
             }
             Self::Words(word_choices) => {
                 if choice_index == DELETE_INDEX {
-                    ChoiceItem::new("DELETE", ButtonLayout::none_armed_arrow("CONFIRM".into()))
+                    ChoiceItem::new("DELETE", ButtonLayout::none_armed_arrow("CONFIRM"))
                         .with_icon(Icon::new(theme::ICON_DELETE))
                 } else {
                     let word = word_choices[choice_index - 1];
                     let mut item = ChoiceItem::new(word, ButtonLayout::default_three_icons());
-                    if choice_index == self.self_count() - 1 {
+                    if choice_index == self.count() - 1 {
                         item.set_right_btn(None);
                     }
                     item

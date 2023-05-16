@@ -65,7 +65,7 @@ where
 {
     choices: Vec<T, MAX_LENGTH>,
     choice_page: ChoicePage<ChoiceFactorySimple<T>, T>,
-    pub return_index: bool,
+    return_index: bool,
 }
 
 impl<T> SimpleChoice<T>

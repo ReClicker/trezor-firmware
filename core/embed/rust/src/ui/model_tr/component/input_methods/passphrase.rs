@@ -1,19 +1,18 @@
-use crate::{
+use crate::ui::{
+    component::{text::common::TextBox, Child, Component, ComponentExt, Event, EventCtx},
+    display::Icon,
+    geometry::Rect,
     strutil::StringType,
-    ui::{
-        component::{text::common::TextBox, Child, Component, ComponentExt, Event, EventCtx},
-        display::Icon,
-        geometry::Rect,
-        util::char_to_string,
-    },
+    util::char_to_string,
 };
+
+use core::marker::PhantomData;
+use heapless::String;
 
 use super::super::{
     theme, ButtonDetails, ButtonLayout, ChangingTextLine, ChoiceFactory, ChoiceItem, ChoicePage,
     ChoicePageMsg,
 };
-use core::marker::PhantomData;
-use heapless::String;
 
 pub enum PassphraseEntryMsg {
     Confirmed,
@@ -32,19 +31,11 @@ enum ChoiceCategory {
 
 const MAX_PASSPHRASE_LENGTH: usize = 50;
 
-const DIGITS: [char; 10] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-const LOWERCASE_LETTERS: [char; 26] = [
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
-    't', 'u', 'v', 'w', 'x', 'y', 'z',
-];
-const UPPERCASE_LETTERS: [char; 26] = [
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
-    'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-];
-const SPECIAL_SYMBOLS: [char; 32] = [
-    '_', '<', '>', '.', ':', '@', '/', '|', '\\', '!', '(', ')', '+', '%', '&', '-', '[', ']', '?',
-    '{', '}', ',', '\'', '`', ';', '"', '~', '$', '^', '=', '*', '#',
-];
+const DIGITS: &str = "0123456789";
+const LOWERCASE_LETTERS: &str = "abcdefghijklmnopqrstuvwxyz";
+const UPPERCASE_LETTERS: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const SPECIAL_SYMBOLS: &str = "_<>.:@/|\\!()+%&-[]?{},\'`\"~$^=*#";
+
 const MENU_LENGTH: usize = 8;
 const SHOW_INDEX: usize = 0;
 const CANCEL_DELETE_INDEX: usize = 1;
@@ -67,13 +58,14 @@ const MENU: [&str; MENU_LENGTH] = [
 
 /// Get a character at a specified index for a specified category.
 fn get_char(current_category: &ChoiceCategory, index: usize) -> char {
-    match current_category {
-        ChoiceCategory::LowercaseLetter => LOWERCASE_LETTERS[index],
-        ChoiceCategory::UppercaseLetter => UPPERCASE_LETTERS[index],
-        ChoiceCategory::Digit => DIGITS[index],
-        ChoiceCategory::SpecialSymbol => SPECIAL_SYMBOLS[index],
+    let group = match current_category {
+        ChoiceCategory::LowercaseLetter => LOWERCASE_LETTERS,
+        ChoiceCategory::UppercaseLetter => UPPERCASE_LETTERS,
+        ChoiceCategory::Digit => DIGITS,
+        ChoiceCategory::SpecialSymbol => SPECIAL_SYMBOLS,
         ChoiceCategory::Menu => unreachable!(),
-    }
+    };
+    unwrap!(group.chars().nth(index))
 }
 
 /// Return category from menu based on page index.
@@ -140,14 +132,11 @@ where
             MENU[choice_index]
         };
 
-        let mut menu_item = ChoiceItem::new(
-            String::<50>::from(choice),
-            ButtonLayout::default_three_icons(),
-        );
+        let mut menu_item = ChoiceItem::new(choice, ButtonLayout::default_three_icons());
 
         // Action buttons have different middle button text
         if [CANCEL_DELETE_INDEX, SHOW_INDEX, ENTER_INDEX].contains(&choice_index) {
-            let confirm_btn = ButtonDetails::armed_text("CONFIRM".into());
+            let confirm_btn = ButtonDetails::armed_text("CONFIRM");
             menu_item.set_middle_btn(Some(confirm_btn));
         }
 
@@ -179,7 +168,7 @@ where
     /// start) to return back
     fn get_character_item(&self, choice_index: usize) -> ChoiceItem<T> {
         if is_menu_choice(&self.current_category, choice_index) {
-            ChoiceItem::new("BACK", ButtonLayout::arrow_armed_arrow("RETURN".into()))
+            ChoiceItem::new("BACK", ButtonLayout::arrow_armed_arrow("RETURN"))
                 .with_icon(Icon::new(theme::ICON_ARROW_BACK_UP))
         } else {
             let ch = get_char(&self.current_category, choice_index);
@@ -193,6 +182,7 @@ where
     T: StringType,
 {
     type Item = ChoiceItem<T>;
+
     fn count(&self) -> usize {
         let length = get_category_length(&self.current_category);
         // All non-MENU categories have an extra item for returning back to MENU
@@ -201,6 +191,7 @@ where
             _ => length + 1,
         }
     }
+
     fn get(&self, choice_index: usize) -> ChoiceItem<T> {
         match self.current_category {
             ChoiceCategory::Menu => self.get_menu_item(choice_index),
@@ -380,8 +371,6 @@ where
 
 #[cfg(feature = "ui_debug")]
 use super::super::{trace::ButtonTrace, ButtonAction, ButtonPos};
-#[cfg(feature = "ui_debug")]
-use crate::ui::util;
 
 #[cfg(feature = "ui_debug")]
 impl ChoiceCategory {
@@ -414,18 +403,8 @@ where
                         match self.choice_page.has_next_choice() {
                             false => ButtonAction::Action("BACK").string(),
                             true => {
-                                let ch = match &self.current_category {
-                                    ChoiceCategory::LowercaseLetter => {
-                                        LOWERCASE_LETTERS[current_index]
-                                    }
-                                    ChoiceCategory::UppercaseLetter => {
-                                        UPPERCASE_LETTERS[current_index]
-                                    }
-                                    ChoiceCategory::Digit => DIGITS[current_index],
-                                    ChoiceCategory::SpecialSymbol => SPECIAL_SYMBOLS[current_index],
-                                    ChoiceCategory::Menu => unreachable!(),
-                                };
-                                ButtonAction::select_item(util::char_to_string::<1>(ch))
+                                let ch = get_char(&self.current_category, current_index);
+                                ButtonAction::select_item(char_to_string::<1>(ch))
                             }
                         }
                     }

@@ -496,10 +496,7 @@ impl<T> ButtonDetails<T> {
 
 /// Holding the button details for all three possible buttons.
 #[derive(Clone)]
-pub struct ButtonLayout<T>
-where
-    T: StringType,
-{
+pub struct ButtonLayout<T> {
     pub btn_left: Option<ButtonDetails<T>>,
     pub btn_middle: Option<ButtonDetails<T>>,
     pub btn_right: Option<ButtonDetails<T>>,
