@@ -15,7 +15,7 @@ use super::super::{
 use heapless::{String, Vec};
 
 pub enum WordlistEntryMsg {
-    ResultWord(String<15>),
+    WordIndex(usize),
 }
 
 const MAX_WORD_LENGTH: usize = 10;
@@ -211,6 +211,11 @@ where
     fn reset_wordlist(&mut self) {
         self.words_list = Self::get_fresh_wordlist(&self.wordlist_type);
     }
+
+    /// Translating the resulting index into actual word.
+    pub fn word_by_index(&self, index: usize) -> &str {
+        self.words_list.get(index).unwrap_or_default()
+    }
 }
 
 impl<T> Component for WordlistEntry<T>
@@ -230,19 +235,19 @@ where
     fn event(&mut self, ctx: &mut EventCtx, event: Event) -> Option<Self::Msg> {
         let msg = self.choice_page.event(ctx, event);
         if let Some(ChoicePageMsg::Choice(page_counter)) = msg {
-            // Clicked SELECT.
-            // When we already offer words, return the word at the given index.
-            // Otherwise, resetting the choice page with up-to-date choices.
             if page_counter == DELETE_INDEX {
-                // Clicked DELETE. Deleting last letter, updating wordlist and updating choices
+                // Clicked DELETE.
+                // Deleting last letter, updating wordlist and updating choices.
                 self.delete_last_letter(ctx);
                 self.reset_wordlist();
                 self.update(ctx);
             } else {
+                // Clicked SELECT.
+                // When we already offer words, return the index of chosen word.
+                // Otherwise, resetting the choice page with up-to-date choices.
                 let index = page_counter - 1;
                 if self.offer_words {
-                    let word = self.words_list.get(index).unwrap_or_default();
-                    return Some(WordlistEntryMsg::ResultWord(String::from(word)));
+                    return Some(WordlistEntryMsg::WordIndex(index));
                 } else {
                     let new_letter = self.letter_choices[index];
                     self.append_letter(ctx, new_letter);

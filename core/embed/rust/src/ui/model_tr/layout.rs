@@ -197,7 +197,7 @@ where
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
-            WordlistEntryMsg::ResultWord(word) => word.as_str().try_into(),
+            WordlistEntryMsg::WordIndex(index) => self.word_by_index(index).try_into(),
         }
     }
 }
