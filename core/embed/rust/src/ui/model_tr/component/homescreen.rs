@@ -7,7 +7,7 @@ use crate::{
         component::{Child, Component, Event, EventCtx, Pad},
         display::{
             fill_background_for_text, rect_fill,
-            toif::{icon_from_toif, Toif},
+            toif::{render_toif, Toif},
             Font, Icon,
         },
         event::USBEvent,
@@ -133,7 +133,7 @@ where
             // `Icon`, it would then need to be specified in a lot of places.
             let toif_data = unwrap!(Toif::new(user_custom_image.as_ref()));
             let r = Rect::snap(TOP_CENTER, toif_data.size(), geometry::TOP_CENTER);
-            icon_from_toif(&toif_data, r.center(), theme::FG, theme::BG);
+            render_toif(&toif_data, r.center(), theme::FG, theme::BG);
         } else {
             Icon::new(theme::ICON_LOGO).draw(
                 TOP_CENTER + Offset::y(LOGO_ICON_TOP_MARGIN),

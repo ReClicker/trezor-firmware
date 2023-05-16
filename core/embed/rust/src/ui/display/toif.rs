@@ -26,10 +26,10 @@ use super::Color;
 const TOIF_HEADER_LENGTH: usize = 12;
 
 pub fn icon(icon: &Icon, center: Point, fg_color: Color, bg_color: Color) {
-    icon_from_toif(&icon.toif, center, fg_color, bg_color);
+    render_toif(&icon.toif, center, fg_color, bg_color);
 }
 
-pub fn icon_from_toif(toif: &Toif, center: Point, fg_color: Color, bg_color: Color) {
+pub fn render_toif(toif: &Toif, center: Point, fg_color: Color, bg_color: Color) {
     let r = Rect::from_center_and_size(center, toif.size());
     let area = r.translate(get_offset());
     let clamped = area.clamp(constant::screen());
