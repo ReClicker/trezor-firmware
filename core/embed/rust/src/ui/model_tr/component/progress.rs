@@ -2,12 +2,12 @@ use core::mem;
 
 use crate::{
     error::Error,
-    micropython::buffer::StrBuffer,
+    strutil::StringType,
     ui::{
         component::{
             base::ComponentExt,
             paginated::Paginate,
-            text::paragraphs::{Paragraph, Paragraphs},
+            text::paragraphs::{Paragraph, ParagraphStrType, Paragraphs},
             Child, Component, Event, EventCtx, Label, Never, Pad,
         },
         display::{self, Font},
@@ -18,24 +18,30 @@ use crate::{
 
 use super::super::{constant, theme};
 
-pub struct Progress {
-    title: Child<Label<StrBuffer>>,
+pub struct Progress<T>
+where
+    T: StringType + ParagraphStrType,
+{
+    title: Child<Label<T>>,
     value: u16,
     loader_y_offset: i16,
     indeterminate: bool,
-    description: Child<Paragraphs<Paragraph<StrBuffer>>>,
+    description: Child<Paragraphs<Paragraph<T>>>,
     description_pad: Pad,
-    update_description: fn(&str) -> Result<StrBuffer, Error>,
+    update_description: fn(&str) -> Result<T, Error>,
 }
 
-impl Progress {
+impl<T> Progress<T>
+where
+    T: StringType + ParagraphStrType,
+{
     const AREA: Rect = constant::screen();
 
     pub fn new(
-        title: StrBuffer,
+        title: T,
         indeterminate: bool,
-        description: StrBuffer,
-        update_description: fn(&str) -> Result<StrBuffer, Error>,
+        description: T,
+        update_description: fn(&str) -> Result<T, Error>,
     ) -> Self {
         Self {
             title: Label::centered(title, theme::TEXT_BOLD).into_child(),
@@ -52,7 +58,10 @@ impl Progress {
     }
 }
 
-impl Component for Progress {
+impl<T> Component for Progress<T>
+where
+    T: StringType + ParagraphStrType,
+{
     type Msg = Never;
 
     fn place(&mut self, _bounds: Rect) -> Rect {
@@ -123,7 +132,10 @@ impl Component for Progress {
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-impl crate::trace::Trace for Progress {
+impl<T> crate::trace::Trace for Progress<T>
+where
+    T: StringType + ParagraphStrType,
+{
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("Progress");
     }

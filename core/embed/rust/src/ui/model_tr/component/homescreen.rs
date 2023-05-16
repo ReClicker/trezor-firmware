@@ -1,6 +1,7 @@
 use crate::{
-    micropython::{buffer::StrBuffer, gc::Gc},
+    micropython::gc::Gc,
     storage::{get_avatar, get_avatar_len},
+    strutil::StringType,
     trezorhal::usb::usb_configured,
     ui::{
         component::{Child, Component, Event, EventCtx, Pad},
@@ -27,20 +28,26 @@ const LOGO_ICON_TOP_MARGIN: i16 = 12;
 const LOCK_ICON_TOP_MARGIN: i16 = 12;
 const NOTIFICATION_HEIGHT: i16 = 12;
 
-pub struct Homescreen {
-    label: StrBuffer,
-    notification: Option<(StrBuffer, u8)>,
+pub struct Homescreen<T>
+where
+    T: StringType,
+{
+    label: T,
+    notification: Option<(T, u8)>,
     pad: Pad,
     /// Used for HTC functionality to lock device from homescreen
-    invisible_buttons: Child<ButtonController<StrBuffer>>,
+    invisible_buttons: Child<ButtonController<T>>,
 }
 
 pub enum HomescreenMsg {
     Dismissed,
 }
 
-impl Homescreen {
-    pub fn new(label: StrBuffer, notification: Option<(StrBuffer, u8)>) -> Self {
+impl<T> Homescreen<T>
+where
+    T: StringType,
+{
+    pub fn new(label: T, notification: Option<(T, u8)>) -> Self {
         // NOTE: for some reason the text cannot be empty string, it was panicking at
         // library/core/src/str/mod.rs:107
         let invisible_btn_layout = ButtonLayout::htc_none_htc("_".into(), "_".into());
@@ -97,7 +104,10 @@ impl Homescreen {
     }
 }
 
-impl Component for Homescreen {
+impl<T> Component for Homescreen<T>
+where
+    T: StringType,
+{
     type Msg = HomescreenMsg;
 
     fn place(&mut self, bounds: Rect) -> Rect {
@@ -158,15 +168,21 @@ fn get_user_custom_image() -> Result<Gc<[u8]>, ()> {
     Err(())
 }
 
-pub struct Lockscreen {
-    label: StrBuffer,
+pub struct Lockscreen<T>
+where
+    T: StringType,
+{
+    label: T,
     bootscreen: bool,
     /// Used for unlocking the device from lockscreen
-    invisible_buttons: Child<ButtonController<StrBuffer>>,
+    invisible_buttons: Child<ButtonController<T>>,
 }
 
-impl Lockscreen {
-    pub fn new(label: StrBuffer, bootscreen: bool) -> Self {
+impl<T> Lockscreen<T>
+where
+    T: StringType,
+{
+    pub fn new(label: T, bootscreen: bool) -> Self {
         let invisible_btn_layout = ButtonLayout::text_none_text("_".into(), "_".into());
         Lockscreen {
             label,
@@ -176,7 +192,10 @@ impl Lockscreen {
     }
 }
 
-impl Component for Lockscreen {
+impl<T> Component for Lockscreen<T>
+where
+    T: StringType,
+{
     type Msg = HomescreenMsg;
 
     fn place(&mut self, bounds: Rect) -> Rect {
@@ -219,7 +238,10 @@ impl Component for Lockscreen {
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-impl crate::trace::Trace for Homescreen {
+impl<T> crate::trace::Trace for Homescreen<T>
+where
+    T: StringType,
+{
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("Homescreen");
         t.string("label", self.label.as_ref());
@@ -227,7 +249,10 @@ impl crate::trace::Trace for Homescreen {
 }
 
 #[cfg(feature = "ui_debug")]
-impl crate::trace::Trace for Lockscreen {
+impl<T> crate::trace::Trace for Lockscreen<T>
+where
+    T: StringType,
+{
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("Lockscreen");
         t.string("label", self.label.as_ref());

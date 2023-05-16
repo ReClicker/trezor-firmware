@@ -1,5 +1,5 @@
 use crate::{
-    micropython::buffer::StrBuffer,
+    strutil::StringType,
     time::Instant,
     ui::{
         component::{Component, Event, EventCtx, Marquee, Never},
@@ -10,16 +10,22 @@ use crate::{
 
 use super::super::theme;
 
-pub struct Title {
+pub struct Title<T>
+where
+    T: StringType,
+{
     area: Rect,
-    title: StrBuffer,
-    marquee: Marquee<StrBuffer>,
+    title: T,
+    marquee: Marquee<T>,
     needs_marquee: bool,
     centered: bool,
 }
 
-impl Title {
-    pub fn new(title: StrBuffer) -> Self {
+impl<T> Title<T>
+where
+    T: StringType,
+{
+    pub fn new(title: T) -> Self {
         Self {
             title: title.clone(),
             marquee: Marquee::new(title, theme::FONT_HEADER, theme::FG, theme::BG),
@@ -38,9 +44,9 @@ impl Title {
         self.title.as_ref()
     }
 
-    pub fn set_text(&mut self, ctx: &mut EventCtx, new_text: StrBuffer) {
+    pub fn set_text(&mut self, ctx: &mut EventCtx, new_text: T) {
         self.title = new_text.clone();
-        self.marquee.set_text(self.title.clone());
+        self.marquee.set_text(new_text.clone());
         let text_width = theme::FONT_HEADER.text_width(new_text.as_ref());
         self.needs_marquee = text_width > self.area.width();
         // Resetting the marquee to the beginning and starting it when necessary.
@@ -51,7 +57,7 @@ impl Title {
     }
 
     /// Display title/header at the top left of the given area.
-    pub fn paint_header_left(title: &StrBuffer, area: Rect) {
+    pub fn paint_header_left(title: &T, area: Rect) {
         let text_height = theme::FONT_HEADER.text_height();
         let title_baseline = area.top_left() + Offset::y(text_height - 1);
         display::text_left(
@@ -64,7 +70,7 @@ impl Title {
     }
 
     /// Display title/header centered at the top of the given area.
-    pub fn paint_header_centered(title: &StrBuffer, area: Rect) {
+    pub fn paint_header_centered(title: &T, area: Rect) {
         let text_height = theme::FONT_HEADER.text_height();
         let title_baseline = area.top_center() + Offset::y(text_height - 1);
         display::text_center(
@@ -77,7 +83,10 @@ impl Title {
     }
 }
 
-impl Component for Title {
+impl<T> Component for Title<T>
+where
+    T: StringType,
+{
     type Msg = Never;
 
     fn place(&mut self, bounds: Rect) -> Rect {
@@ -112,7 +121,10 @@ impl Component for Title {
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-impl crate::trace::Trace for Title {
+impl<T> crate::trace::Trace for Title<T>
+where
+    T: StringType,
+{
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("Title");
         t.string("text", self.title.as_ref());

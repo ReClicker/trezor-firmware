@@ -1,8 +1,11 @@
 #[cfg(feature = "ui_debug")]
 use crate::trace::Trace;
-use crate::ui::{
-    component::{Child, Component, Event, EventCtx, Pad},
-    geometry::Rect,
+use crate::{
+    strutil::StringType,
+    ui::{
+        component::{Child, Component, Event, EventCtx, Pad},
+        geometry::Rect,
+    },
 };
 
 use super::super::{theme, ButtonController, ButtonControllerMsg, ButtonLayout, ButtonPos};
@@ -18,7 +21,7 @@ const DEFAULT_Y_BASELINE: i16 = 20;
 
 pub trait Choice<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     fn paint_center(&self, area: Rect, inverse: bool);
     fn width_center(&self) -> i16 {
@@ -46,7 +49,7 @@ where
 /// This way, no more than one item is stored in memory at any time.
 pub trait ChoiceFactory<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     #[cfg(feature = "ui_debug")]
     type Item: Choice<T> + Trace;
@@ -72,7 +75,7 @@ where
 pub struct ChoicePage<F, T>
 where
     F: ChoiceFactory<T>,
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     choices: F,
     pad: Pad,
@@ -97,7 +100,7 @@ where
 impl<F, T> ChoicePage<F, T>
 where
     F: ChoiceFactory<T>,
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     pub fn new(choices: F) -> Self {
         let initial_btn_layout = choices.get(0).btn_layout();
@@ -354,7 +357,7 @@ where
 impl<F, T> Component for ChoicePage<F, T>
 where
     F: ChoiceFactory<T>,
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     type Msg = ChoicePageMsg;
 
@@ -430,7 +433,7 @@ where
 impl<F, T> crate::trace::Trace for ChoicePage<F, T>
 where
     F: ChoiceFactory<T>,
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ChoicePage");

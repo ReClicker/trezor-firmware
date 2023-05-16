@@ -1,15 +1,18 @@
-use crate::ui::{
-    component::{text::common::TextBox, Child, Component, ComponentExt, Event, EventCtx},
-    display::Icon,
-    geometry::Rect,
-    util::char_to_string,
+use crate::{
+    strutil::StringType,
+    ui::{
+        component::{text::common::TextBox, Child, Component, ComponentExt, Event, EventCtx},
+        display::Icon,
+        geometry::Rect,
+        util::char_to_string,
+    },
 };
 
 use super::super::{
     theme, ButtonDetails, ButtonLayout, ChangingTextLine, ChoiceFactory, ChoiceItem, ChoicePage,
     ChoicePageMsg,
 };
-use crate::micropython::buffer::StrBuffer;
+use core::marker::PhantomData;
 use heapless::String;
 
 pub enum PassphraseEntryMsg {
@@ -105,22 +108,27 @@ fn is_menu_choice(current_category: &ChoiceCategory, page_index: usize) -> bool 
     page_index == category_length
 }
 
-struct ChoiceFactoryPassphrase {
+struct ChoiceFactoryPassphrase<T> {
     current_category: ChoiceCategory,
     /// Used to either show DELETE or CANCEL
     is_empty: bool,
+    _phantom: PhantomData<T>,
 }
 
-impl ChoiceFactoryPassphrase {
+impl<T> ChoiceFactoryPassphrase<T>
+where
+    T: StringType,
+{
     fn new(current_category: ChoiceCategory, is_empty: bool) -> Self {
         Self {
             current_category,
             is_empty,
+            _phantom: PhantomData,
         }
     }
 
     /// MENU choices with accept and cancel hold-to-confirm side buttons.
-    fn get_menu_item(&self, choice_index: usize) -> ChoiceItem<StrBuffer> {
+    fn get_menu_item(&self, choice_index: usize) -> ChoiceItem<T> {
         // More options for CANCEL/DELETE button
         let choice = if choice_index == CANCEL_DELETE_INDEX {
             if self.is_empty {
@@ -144,18 +152,24 @@ impl ChoiceFactoryPassphrase {
         }
 
         // Including icons for some items.
-        if choice_index == CANCEL_DELETE_INDEX {
-            if self.is_empty {
-                menu_item = menu_item.with_icon(Icon::new(theme::ICON_CANCEL));
-            } else {
-                menu_item = menu_item.with_icon(Icon::new(theme::ICON_DELETE));
+        match choice_index {
+            CANCEL_DELETE_INDEX => {
+                if self.is_empty {
+                    menu_item = menu_item.with_icon(Icon::new(theme::ICON_CANCEL));
+                } else {
+                    menu_item = menu_item.with_icon(Icon::new(theme::ICON_DELETE));
+                }
             }
-        } else if choice_index == SHOW_INDEX {
-            menu_item = menu_item.with_icon(Icon::new(theme::ICON_EYE));
-        } else if choice_index == ENTER_INDEX {
-            menu_item = menu_item.with_icon(Icon::new(theme::ICON_TICK));
-        } else if choice_index == SPACE_INDEX {
-            menu_item = menu_item.with_icon(Icon::new(theme::ICON_SPACE));
+            SHOW_INDEX => {
+                menu_item = menu_item.with_icon(Icon::new(theme::ICON_EYE));
+            }
+            ENTER_INDEX => {
+                menu_item = menu_item.with_icon(Icon::new(theme::ICON_TICK));
+            }
+            SPACE_INDEX => {
+                menu_item = menu_item.with_icon(Icon::new(theme::ICON_SPACE));
+            }
+            _ => {}
         }
 
         menu_item
@@ -163,7 +177,7 @@ impl ChoiceFactoryPassphrase {
 
     /// Character choices with a BACK to MENU choice at the end (visible from
     /// start) to return back
-    fn get_character_item(&self, choice_index: usize) -> ChoiceItem<StrBuffer> {
+    fn get_character_item(&self, choice_index: usize) -> ChoiceItem<T> {
         if is_menu_choice(&self.current_category, choice_index) {
             ChoiceItem::new("BACK", ButtonLayout::arrow_armed_arrow("RETURN".into()))
                 .with_icon(Icon::new(theme::ICON_ARROW_BACK_UP))
@@ -174,8 +188,11 @@ impl ChoiceFactoryPassphrase {
     }
 }
 
-impl ChoiceFactory<StrBuffer> for ChoiceFactoryPassphrase {
-    type Item = ChoiceItem<StrBuffer>;
+impl<T> ChoiceFactory<T> for ChoiceFactoryPassphrase<T>
+where
+    T: StringType,
+{
+    type Item = ChoiceItem<T>;
     fn count(&self) -> usize {
         let length = get_category_length(&self.current_category);
         // All non-MENU categories have an extra item for returning back to MENU
@@ -184,7 +201,7 @@ impl ChoiceFactory<StrBuffer> for ChoiceFactoryPassphrase {
             _ => length + 1,
         }
     }
-    fn get(&self, choice_index: usize) -> ChoiceItem<StrBuffer> {
+    fn get(&self, choice_index: usize) -> ChoiceItem<T> {
         match self.current_category {
             ChoiceCategory::Menu => self.get_menu_item(choice_index),
             _ => self.get_character_item(choice_index),
@@ -193,8 +210,11 @@ impl ChoiceFactory<StrBuffer> for ChoiceFactoryPassphrase {
 }
 
 /// Component for entering a passphrase.
-pub struct PassphraseEntry {
-    choice_page: ChoicePage<ChoiceFactoryPassphrase, StrBuffer>,
+pub struct PassphraseEntry<T>
+where
+    T: StringType,
+{
+    choice_page: ChoicePage<ChoiceFactoryPassphrase<T>, T>,
     passphrase_dots: Child<ChangingTextLine<String<MAX_PASSPHRASE_LENGTH>>>,
     show_plain_passphrase: bool,
     textbox: TextBox<MAX_PASSPHRASE_LENGTH>,
@@ -202,7 +222,10 @@ pub struct PassphraseEntry {
     menu_position: usize, // position in the menu so we can return back
 }
 
-impl PassphraseEntry {
+impl<T> PassphraseEntry<T>
+where
+    T: StringType,
+{
     pub fn new() -> Self {
         Self {
             choice_page: ChoicePage::new(ChoiceFactoryPassphrase::new(ChoiceCategory::Menu, true))
@@ -267,7 +290,10 @@ impl PassphraseEntry {
     }
 }
 
-impl Component for PassphraseEntry {
+impl<T> Component for PassphraseEntry<T>
+where
+    T: StringType,
+{
     type Msg = PassphraseEntryMsg;
 
     fn place(&mut self, bounds: Rect) -> Rect {
@@ -371,7 +397,10 @@ impl ChoiceCategory {
 }
 
 #[cfg(feature = "ui_debug")]
-impl crate::trace::Trace for PassphraseEntry {
+impl<T> crate::trace::Trace for PassphraseEntry<T>
+where
+    T: StringType,
+{
     fn get_btn_action(&self, pos: ButtonPos) -> String<25> {
         match pos {
             ButtonPos::Left => ButtonAction::PrevPage.string(),

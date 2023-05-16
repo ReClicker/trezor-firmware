@@ -1,10 +1,13 @@
 use super::{
     theme, Button, ButtonDetails, ButtonLayout, ButtonPos, HoldToConfirm, HoldToConfirmMsg,
 };
-use crate::ui::{
-    component::{base::Event, Component, EventCtx, Pad},
-    event::{ButtonEvent, PhysicalButton},
-    geometry::Rect,
+use crate::{
+    strutil::StringType,
+    ui::{
+        component::{base::Event, Component, EventCtx, Pad},
+        event::{ButtonEvent, PhysicalButton},
+        geometry::Rect,
+    },
 };
 
 /// All possible states buttons (left and right) can be at.
@@ -42,7 +45,7 @@ pub enum ButtonControllerMsg {
 /// Defines what kind of button should be currently used.
 pub enum ButtonType<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     Button(Button<T>),
     HoldToConfirm(HoldToConfirm<T>),
@@ -51,7 +54,7 @@ where
 
 impl<T> ButtonType<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     pub fn from_button_details(pos: ButtonPos, btn_details: Option<ButtonDetails<T>>) -> Self {
         if let Some(btn_details) = btn_details {
@@ -97,7 +100,7 @@ where
 /// `button_type` specified what from those two is used, if anything.
 pub struct ButtonContainer<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     pos: ButtonPos,
     button_type: ButtonType<T>,
@@ -105,7 +108,7 @@ where
 
 impl<T> ButtonContainer<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     /// Supplying `None` as `btn_details`  marks the button inactive
     /// (it can be later activated in `set()`).
@@ -185,7 +188,7 @@ where
 /// based upon the buttons being long-press or not.
 pub struct ButtonController<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     pad: Pad,
     left_btn: ButtonContainer<T>,
@@ -200,7 +203,7 @@ where
 
 impl<T> ButtonController<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     pub fn new(btn_layout: ButtonLayout<T>) -> Self {
         Self {
@@ -265,7 +268,7 @@ where
 
 impl<T> Component for ButtonController<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     type Msg = ButtonControllerMsg;
 
@@ -434,7 +437,7 @@ use super::ButtonContent;
 #[cfg(feature = "ui_debug")]
 impl<T> crate::trace::Trace for ButtonContainer<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("Button");
@@ -458,7 +461,7 @@ where
 #[cfg(feature = "ui_debug")]
 impl<T> crate::trace::Trace for ButtonController<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ButtonController");

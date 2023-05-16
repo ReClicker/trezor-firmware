@@ -1,5 +1,5 @@
 use crate::{
-    micropython::buffer::StrBuffer,
+    strutil::StringType,
     ui::{
         component::{Child, Component, Event, EventCtx, Never, Paginate},
         display::{text_multiline_split_words, Font},
@@ -20,16 +20,22 @@ const WORD_FONT: Font = Font::NORMAL;
 const INFO_TOP_OFFSET: i16 = 15;
 
 /// Showing the given share words.
-pub struct ShareWords<const N: usize> {
+pub struct ShareWords<const N: usize, T>
+where
+    T: StringType,
+{
     area: Rect,
-    title: Child<Title>,
+    title: Child<Title<T>>,
     scrollbar: Child<ScrollBar>,
-    share_words: Vec<StrBuffer, N>,
+    share_words: Vec<T, N>,
     page_index: usize,
 }
 
-impl<const N: usize> ShareWords<N> {
-    pub fn new(title: StrBuffer, share_words: Vec<StrBuffer, N>) -> Self {
+impl<const N: usize, T> ShareWords<N, T>
+where
+    T: StringType,
+{
+    pub fn new(title: T, share_words: Vec<T, N>) -> Self {
         let mut instance = Self {
             area: Rect::zero(),
             title: Child::new(Title::new(title)),
@@ -145,7 +151,10 @@ impl<const N: usize> ShareWords<N> {
     }
 }
 
-impl<const N: usize> Component for ShareWords<N> {
+impl<const N: usize, T> Component for ShareWords<N, T>
+where
+    T: StringType,
+{
     type Msg = Never;
 
     fn place(&mut self, bounds: Rect) -> Rect {
@@ -184,7 +193,10 @@ impl<const N: usize> Component for ShareWords<N> {
     }
 }
 
-impl<const N: usize> Paginate for ShareWords<N> {
+impl<const N: usize, T> Paginate for ShareWords<N, T>
+where
+    T: StringType,
+{
     fn page_count(&mut self) -> usize {
         // Not defining the logic here, as we do not want it to be `&mut`.
         self.total_page_count()
@@ -199,7 +211,10 @@ impl<const N: usize> Paginate for ShareWords<N> {
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-impl<const N: usize> crate::trace::Trace for ShareWords<N> {
+impl<const N: usize, T> crate::trace::Trace for ShareWords<N, T>
+where
+    T: StringType,
+{
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ShareWords");
         let content = if self.is_entry_page() {
@@ -221,7 +236,8 @@ impl<const N: usize> crate::trace::Trace for ShareWords<N> {
                     break;
                 }
                 let word = &self.share_words[index];
-                let current_line = build_string!(20, inttostr!(index as u8 + 1), " ", word, "\n");
+                let current_line =
+                    build_string!(20, inttostr!(index as u8 + 1), " ", word.as_ref(), "\n");
                 unwrap!(content.push_str(&current_line));
             }
             content

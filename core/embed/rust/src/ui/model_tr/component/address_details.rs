@@ -2,10 +2,12 @@ use heapless::Vec;
 
 use crate::{
     error::Error,
-    micropython::buffer::StrBuffer,
+    strutil::StringType,
     ui::{
         component::{
-            text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt},
+            text::paragraphs::{
+                Paragraph, ParagraphSource, ParagraphStrType, ParagraphVecShort, Paragraphs, VecExt,
+            },
             Child, Component, Event, EventCtx, Pad, Paginate, Qr,
         },
         geometry::Rect,
@@ -23,24 +25,30 @@ pub enum AddressDetailsMsg {
     Cancelled,
 }
 
-pub struct AddressDetails {
+pub struct AddressDetails<T>
+where
+    T: StringType + ParagraphStrType,
+{
     qr_code: Qr,
-    details_view: Paragraphs<ParagraphVecShort<StrBuffer>>,
-    xpub_view: Frame<Paragraphs<Paragraph<StrBuffer>>>,
-    xpubs: Vec<(StrBuffer, StrBuffer), MAX_XPUBS>,
+    details_view: Paragraphs<ParagraphVecShort<T>>,
+    xpub_view: Frame<Paragraphs<Paragraph<T>>, T>,
+    xpubs: Vec<(T, T), MAX_XPUBS>,
     current_page: usize,
     current_subpage: usize,
     area: Rect,
     pad: Pad,
-    buttons: Child<ButtonController<StrBuffer>>,
+    buttons: Child<ButtonController<T>>,
 }
 
-impl AddressDetails {
+impl<T> AddressDetails<T>
+where
+    T: StringType + ParagraphStrType,
+{
     pub fn new(
-        qr_address: StrBuffer,
+        qr_address: T,
         case_sensitive: bool,
-        account: Option<StrBuffer>,
-        path: Option<StrBuffer>,
+        account: Option<T>,
+        path: Option<T>,
     ) -> Result<Self, Error> {
         let qr_code = Qr::new(qr_address, case_sensitive)?.with_border(QR_BORDER);
         let details_view = {
@@ -74,7 +82,7 @@ impl AddressDetails {
         Ok(result)
     }
 
-    pub fn add_xpub(&mut self, title: StrBuffer, xpub: StrBuffer) -> Result<(), Error> {
+    pub fn add_xpub(&mut self, title: T, xpub: T) -> Result<(), Error> {
         self.xpubs
             .push((title, xpub))
             .map_err(|_| Error::OutOfRange)
@@ -108,7 +116,7 @@ impl AddressDetails {
     // Normally there are arrows everywhere, apart from the right side of the last
     // page. On xpub pages there is VIEW FULL middle button when it cannot fit
     // one page. On xpub subpages there are wide arrows to scroll.
-    fn get_button_layout(&mut self) -> ButtonLayout<StrBuffer> {
+    fn get_button_layout(&mut self) -> ButtonLayout<T> {
         let (left, middle, right) = if self.is_in_subpage() {
             let left = Some(ButtonDetails::up_arrow_icon_wide());
             let right = if self.is_last_subpage() {
@@ -172,7 +180,10 @@ impl AddressDetails {
     }
 }
 
-impl Component for AddressDetails {
+impl<T> Component for AddressDetails<T>
+where
+    T: StringType + ParagraphStrType,
+{
     type Msg = AddressDetailsMsg;
 
     fn place(&mut self, bounds: Rect) -> Rect {
@@ -259,7 +270,10 @@ impl Component for AddressDetails {
 }
 
 #[cfg(feature = "ui_debug")]
-impl crate::trace::Trace for AddressDetails {
+impl<T> crate::trace::Trace for AddressDetails<T>
+where
+    T: StringType + ParagraphStrType,
+{
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("AddressDetails");
         match self.current_page {

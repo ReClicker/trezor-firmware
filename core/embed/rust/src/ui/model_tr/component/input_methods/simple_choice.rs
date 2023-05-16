@@ -1,5 +1,5 @@
 use crate::{
-    micropython::buffer::StrBuffer,
+    strutil::StringType,
     ui::{
         component::{Component, Event, EventCtx},
         geometry::Rect,
@@ -14,25 +14,28 @@ pub enum SimpleChoiceMsg {
     Index(usize),
 }
 
-struct ChoiceFactorySimple<const N: usize> {
-    choices: Vec<StrBuffer, N>,
+struct ChoiceFactorySimple<const N: usize, T> {
+    choices: Vec<T, N>,
     carousel: bool,
 }
 
-impl<const N: usize> ChoiceFactorySimple<N> {
-    fn new(choices: Vec<StrBuffer, N>, carousel: bool) -> Self {
+impl<const N: usize, T> ChoiceFactorySimple<N, T> {
+    fn new(choices: Vec<T, N>, carousel: bool) -> Self {
         Self { choices, carousel }
     }
 }
 
-impl<const N: usize> ChoiceFactory<StrBuffer> for ChoiceFactorySimple<N> {
-    type Item = ChoiceItem<StrBuffer>;
+impl<const N: usize, T> ChoiceFactory<T> for ChoiceFactorySimple<N, T>
+where
+    T: StringType,
+{
+    type Item = ChoiceItem<T>;
 
     fn count(&self) -> usize {
         N
     }
 
-    fn get(&self, choice_index: usize) -> ChoiceItem<StrBuffer> {
+    fn get(&self, choice_index: usize) -> ChoiceItem<T> {
         let text = &self.choices[choice_index];
         let mut choice_item = ChoiceItem::new(text, ButtonLayout::default_three_icons());
 
@@ -53,14 +56,20 @@ impl<const N: usize> ChoiceFactory<StrBuffer> for ChoiceFactorySimple<N> {
 
 /// Simple wrapper around `ChoicePage` that allows for
 /// inputting a list of values and receiving the chosen one.
-pub struct SimpleChoice<const N: usize> {
-    choices: Vec<StrBuffer, N>,
-    choice_page: ChoicePage<ChoiceFactorySimple<N>, StrBuffer>,
+pub struct SimpleChoice<const N: usize, T>
+where
+    T: StringType,
+{
+    choices: Vec<T, N>,
+    choice_page: ChoicePage<ChoiceFactorySimple<N, T>, T>,
     return_index: bool,
 }
 
-impl<const N: usize> SimpleChoice<N> {
-    pub fn new(str_choices: Vec<StrBuffer, N>, carousel: bool) -> Self {
+impl<const N: usize, T> SimpleChoice<N, T>
+where
+    T: StringType,
+{
+    pub fn new(str_choices: Vec<T, N>, carousel: bool) -> Self {
         let choices = ChoiceFactorySimple::new(str_choices.clone(), carousel);
         Self {
             choices: str_choices,
@@ -88,7 +97,10 @@ impl<const N: usize> SimpleChoice<N> {
     }
 }
 
-impl<const N: usize> Component for SimpleChoice<N> {
+impl<const N: usize, T> Component for SimpleChoice<N, T>
+where
+    T: StringType,
+{
     type Msg = SimpleChoiceMsg;
 
     fn place(&mut self, bounds: Rect) -> Rect {
@@ -121,7 +133,10 @@ impl<const N: usize> Component for SimpleChoice<N> {
 use super::super::{ButtonAction, ButtonPos};
 
 #[cfg(feature = "ui_debug")]
-impl<const N: usize> crate::trace::Trace for SimpleChoice<N> {
+impl<const N: usize, T> crate::trace::Trace for SimpleChoice<N, T>
+where
+    T: StringType,
+{
     fn get_btn_action(&self, pos: ButtonPos) -> String<25> {
         match pos {
             ButtonPos::Left => match self.choice_page.has_previous_choice() {

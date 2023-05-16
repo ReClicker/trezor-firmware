@@ -1,5 +1,5 @@
 use crate::{
-    micropython::buffer::StrBuffer,
+    strutil::StringType,
     ui::{
         component::{base::Never, Component, Event, EventCtx},
         display::{text_multiline_split_words, Font},
@@ -12,13 +12,16 @@ use super::theme;
 const HEADER: &str = "COINJOIN IN PROGRESS";
 const FOOTER: &str = "Don't disconnect your Trezor";
 
-pub struct CoinJoinProgress {
-    text: StrBuffer,
+pub struct CoinJoinProgress<T> {
+    text: T,
     area: Rect,
 }
 
-impl CoinJoinProgress {
-    pub fn new(text: StrBuffer, _indeterminate: bool) -> Self {
+impl<T> CoinJoinProgress<T>
+where
+    T: StringType,
+{
+    pub fn new(text: T, _indeterminate: bool) -> Self {
         Self {
             text,
             area: Rect::zero(),
@@ -26,7 +29,10 @@ impl CoinJoinProgress {
     }
 }
 
-impl Component for CoinJoinProgress {
+impl<T> Component for CoinJoinProgress<T>
+where
+    T: StringType,
+{
     type Msg = Never;
 
     fn place(&mut self, bounds: Rect) -> Rect {
@@ -75,7 +81,10 @@ impl Component for CoinJoinProgress {
 }
 
 #[cfg(feature = "ui_debug")]
-impl crate::trace::Trace for CoinJoinProgress {
+impl<T> crate::trace::Trace for CoinJoinProgress<T>
+where
+    T: StringType,
+{
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("CoinJoinProgress");
         t.string("text", self.text.as_ref());

@@ -1,10 +1,12 @@
-use crate::ui::{
-    component::{Component, Event, EventCtx},
-    geometry::Rect,
+use crate::{
+    strutil::StringType,
+    ui::{
+        component::{Component, Event, EventCtx},
+        geometry::Rect,
+    },
 };
 
 use super::super::{ButtonLayout, ChoiceFactory, ChoiceItem, ChoicePage, ChoicePageMsg};
-use crate::micropython::buffer::StrBuffer;
 use heapless::String;
 
 pub enum NumberInputMsg {
@@ -20,16 +22,25 @@ impl ChoiceFactoryNumberInput {
     fn new(min: u32, max: u32) -> Self {
         Self { min, max }
     }
-}
 
-impl ChoiceFactory<StrBuffer> for ChoiceFactoryNumberInput {
-    type Item = ChoiceItem<StrBuffer>;
-
-    fn count(&self) -> usize {
+    /// NOTE: done to remediate some type-inconsistencies
+    /// with using self.count() in self.get()
+    fn self_count(&self) -> usize {
         (self.max - self.min + 1) as usize
     }
+}
 
-    fn get(&self, choice_index: usize) -> ChoiceItem<StrBuffer> {
+impl<T> ChoiceFactory<T> for ChoiceFactoryNumberInput
+where
+    T: StringType,
+{
+    type Item = ChoiceItem<T>;
+
+    fn count(&self) -> usize {
+        self.self_count()
+    }
+
+    fn get(&self, choice_index: usize) -> ChoiceItem<T> {
         let num = self.min + choice_index as u32;
         let text: String<10> = String::from(num);
         let mut choice_item = ChoiceItem::new(text, ButtonLayout::default_three_icons());
@@ -39,7 +50,7 @@ impl ChoiceFactory<StrBuffer> for ChoiceFactoryNumberInput {
         if choice_index == 0 {
             choice_item.set_left_btn(None);
         }
-        if choice_index == self.count() - 1 {
+        if choice_index == self.self_count() - 1 {
             choice_item.set_right_btn(None);
         }
 
@@ -49,12 +60,18 @@ impl ChoiceFactory<StrBuffer> for ChoiceFactoryNumberInput {
 
 /// Simple wrapper around `ChoicePage` that allows for
 /// inputting a list of values and receiving the chosen one.
-pub struct NumberInput {
-    choice_page: ChoicePage<ChoiceFactoryNumberInput, StrBuffer>,
+pub struct NumberInput<T>
+where
+    T: StringType,
+{
+    choice_page: ChoicePage<ChoiceFactoryNumberInput, T>,
     min: u32,
 }
 
-impl NumberInput {
+impl<T> NumberInput<T>
+where
+    T: StringType,
+{
     pub fn new(min: u32, max: u32, init_value: u32) -> Self {
         let choices = ChoiceFactoryNumberInput::new(min, max);
         let initial_page = init_value - min;
@@ -65,7 +82,10 @@ impl NumberInput {
     }
 }
 
-impl Component for NumberInput {
+impl<T> Component for NumberInput<T>
+where
+    T: StringType,
+{
     type Msg = NumberInputMsg;
 
     fn place(&mut self, bounds: Rect) -> Rect {
@@ -94,7 +114,10 @@ impl Component for NumberInput {
 use super::super::{ButtonAction, ButtonPos};
 
 #[cfg(feature = "ui_debug")]
-impl crate::trace::Trace for NumberInput {
+impl<T> crate::trace::Trace for NumberInput<T>
+where
+    T: StringType,
+{
     fn get_btn_action(&self, pos: ButtonPos) -> String<25> {
         match pos {
             ButtonPos::Left => match self.choice_page.has_previous_choice() {

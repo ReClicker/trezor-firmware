@@ -1,5 +1,5 @@
 use crate::{
-    micropython::buffer::StrBuffer,
+    strutil::StringType,
     ui::{
         component::{Child, Component, ComponentExt, Event, EventCtx, Pad},
         geometry::Rect,
@@ -19,27 +19,32 @@ pub enum FlowMsg {
     Info,
 }
 
-pub struct Flow<F, const M: usize> {
+pub struct Flow<F, const M: usize, T>
+where
+    F: Fn(usize) -> Page<M, T>,
+    T: StringType,
+{
     /// Function to get pages from
-    pages: FlowPages<F, M>,
+    pages: FlowPages<F, M, T>,
     /// Instance of the current Page
-    current_page: Page<M>,
+    current_page: Page<M, T>,
     /// Title being shown at the top in bold
-    title: Option<Title>,
+    title: Option<Title<T>>,
     scrollbar: Child<ScrollBar>,
     content_area: Rect,
     title_area: Rect,
     pad: Pad,
-    buttons: Child<ButtonController<StrBuffer>>,
+    buttons: Child<ButtonController<T>>,
     page_counter: usize,
     return_confirmed_index: bool,
 }
 
-impl<F, const M: usize> Flow<F, M>
+impl<F, const M: usize, T> Flow<F, M, T>
 where
-    F: Fn(usize) -> Page<M>,
+    F: Fn(usize) -> Page<M, T>,
+    T: StringType,
 {
-    pub fn new(pages: FlowPages<F, M>) -> Self {
+    pub fn new(pages: FlowPages<F, M, T>) -> Self {
         let current_page = pages.get(0);
         Self {
             pages,
@@ -60,7 +65,7 @@ where
 
     /// Adding a common title to all pages. The title will not be colliding
     /// with the page content, as the content will be offset.
-    pub fn with_common_title(mut self, title: StrBuffer) -> Self {
+    pub fn with_common_title(mut self, title: T) -> Self {
         self.title = Some(Title::new(title));
         self
     }
@@ -174,9 +179,10 @@ where
     }
 }
 
-impl<F, const M: usize> Component for Flow<F, M>
+impl<F, const M: usize, T> Component for Flow<F, M, T>
 where
-    F: Fn(usize) -> Page<M>,
+    F: Fn(usize) -> Page<M, T>,
+    T: StringType,
 {
     type Msg = FlowMsg;
 
@@ -290,9 +296,10 @@ where
 use heapless::String;
 
 #[cfg(feature = "ui_debug")]
-impl<F, const M: usize> crate::trace::Trace for Flow<F, M>
+impl<F, const M: usize, T> crate::trace::Trace for Flow<F, M, T>
 where
-    F: Fn(usize) -> Page<M>,
+    F: Fn(usize) -> Page<M, T>,
+    T: StringType,
 {
     /// Accounting for the possibility that button is connected with the
     /// currently paginated flow_page (only Prev or Next in that case).

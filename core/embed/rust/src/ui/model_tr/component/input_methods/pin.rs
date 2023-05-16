@@ -1,5 +1,5 @@
 use crate::{
-    micropython::buffer::StrBuffer,
+    strutil::StringType,
     trezorhal::random,
     ui::{
         component::{text::common::TextBox, Child, Component, ComponentExt, Event, EventCtx},
@@ -12,6 +12,7 @@ use super::super::{
     theme, ButtonDetails, ButtonLayout, ChangingTextLine, ChoiceFactory, ChoiceItem, ChoicePage,
     ChoicePageMsg,
 };
+use core::marker::PhantomData;
 use heapless::String;
 
 pub enum PinEntryMsg {
@@ -30,18 +31,31 @@ const CHOICES: [&str; CHOICE_LENGTH] = [
     "DELETE", "SHOW", "ENTER", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
 ];
 
-struct ChoiceFactoryPIN {}
+struct ChoiceFactoryPIN<T>
+where
+    T: StringType,
+{
+    _phantom: PhantomData<T>,
+}
 
-impl ChoiceFactoryPIN {
+impl<T> ChoiceFactoryPIN<T>
+where
+    T: StringType,
+{
     fn new() -> Self {
-        Self {}
+        Self {
+            _phantom: PhantomData,
+        }
     }
 }
 
-impl ChoiceFactory<StrBuffer> for ChoiceFactoryPIN {
-    type Item = ChoiceItem<StrBuffer>;
+impl<T> ChoiceFactory<T> for ChoiceFactoryPIN<T>
+where
+    T: StringType,
+{
+    type Item = ChoiceItem<T>;
 
-    fn get(&self, choice_index: usize) -> ChoiceItem<StrBuffer> {
+    fn get(&self, choice_index: usize) -> ChoiceItem<T> {
         let choice_str = CHOICES[choice_index];
 
         let mut choice_item = ChoiceItem::new(choice_str, ButtonLayout::default_three_icons());
@@ -53,12 +67,17 @@ impl ChoiceFactory<StrBuffer> for ChoiceFactoryPIN {
         }
 
         // Adding icons for appropriate items
-        if choice_index == DELETE_INDEX {
-            choice_item = choice_item.with_icon(Icon::new(theme::ICON_DELETE));
-        } else if choice_index == SHOW_INDEX {
-            choice_item = choice_item.with_icon(Icon::new(theme::ICON_EYE));
-        } else if choice_index == ENTER_INDEX {
-            choice_item = choice_item.with_icon(Icon::new(theme::ICON_TICK));
+        match choice_index {
+            DELETE_INDEX => {
+                choice_item = choice_item.with_icon(Icon::new(theme::ICON_DELETE));
+            }
+            SHOW_INDEX => {
+                choice_item = choice_item.with_icon(Icon::new(theme::ICON_EYE));
+            }
+            ENTER_INDEX => {
+                choice_item = choice_item.with_icon(Icon::new(theme::ICON_TICK));
+            }
+            _ => {}
         }
 
         choice_item
@@ -70,17 +89,23 @@ impl ChoiceFactory<StrBuffer> for ChoiceFactoryPIN {
 }
 
 /// Component for entering a PIN.
-pub struct PinEntry {
-    choice_page: ChoicePage<ChoiceFactoryPIN, StrBuffer>,
+pub struct PinEntry<T>
+where
+    T: StringType,
+{
+    choice_page: ChoicePage<ChoiceFactoryPIN<T>, T>,
     pin_line: Child<ChangingTextLine<String<MAX_PIN_LENGTH>>>,
-    subprompt_line: Child<ChangingTextLine<StrBuffer>>,
-    prompt: StrBuffer,
+    subprompt_line: Child<ChangingTextLine<T>>,
+    prompt: T,
     show_real_pin: bool,
     textbox: TextBox<MAX_PIN_LENGTH>,
 }
 
-impl PinEntry {
-    pub fn new(prompt: StrBuffer, subprompt: StrBuffer) -> Self {
+impl<T> PinEntry<T>
+where
+    T: StringType,
+{
+    pub fn new(prompt: T, subprompt: T) -> Self {
         let choices = ChoiceFactoryPIN::new();
 
         Self {
@@ -158,7 +183,10 @@ impl PinEntry {
     }
 }
 
-impl Component for PinEntry {
+impl<T> Component for PinEntry<T>
+where
+    T: StringType,
+{
     type Msg = PinEntryMsg;
 
     fn place(&mut self, bounds: Rect) -> Rect {
@@ -225,7 +253,10 @@ impl Component for PinEntry {
 use super::super::{ButtonAction, ButtonPos};
 
 #[cfg(feature = "ui_debug")]
-impl crate::trace::Trace for PinEntry {
+impl<T> crate::trace::Trace for PinEntry<T>
+where
+    T: StringType,
+{
     fn get_btn_action(&self, pos: ButtonPos) -> String<25> {
         match pos {
             ButtonPos::Left => ButtonAction::PrevPage.string(),
@@ -246,8 +277,8 @@ impl crate::trace::Trace for PinEntry {
         t.component("PinKeyboard");
         t.string("prompt", self.prompt.as_ref());
         let subprompt = self.subprompt_line.inner().get_text();
-        if !subprompt.is_empty() {
-            t.string("subprompt", subprompt);
+        if !subprompt.as_ref().is_empty() {
+            t.string("subprompt", subprompt.as_ref());
         }
         t.string("pin", self.textbox.content());
         self.report_btn_actions(t);

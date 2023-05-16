@@ -1,6 +1,9 @@
-use crate::ui::{
-    display::{rect_fill, rect_fill_corners, rect_outline_rounded, Font, Icon},
-    geometry::{Offset, Rect, BOTTOM_LEFT, BOTTOM_RIGHT},
+use crate::{
+    strutil::StringType,
+    ui::{
+        display::{rect_fill, rect_fill_corners, rect_outline_rounded, Font, Icon},
+        geometry::{Offset, Rect, BOTTOM_LEFT, BOTTOM_RIGHT},
+    },
 };
 use heapless::String;
 
@@ -15,7 +18,7 @@ const ICON_RIGHT_PADDING: i16 = 2;
 #[derive(Clone)]
 pub struct ChoiceItem<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     text: String<50>,
     icon: Option<Icon>,
@@ -25,7 +28,7 @@ where
 
 impl<T> ChoiceItem<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     pub fn new<F>(text: F, btn_layout: ButtonLayout<T>) -> Self
     where
@@ -160,7 +163,7 @@ where
 
 impl<T> Choice<T> for ChoiceItem<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     /// Painting the item as the main choice in the middle.
     /// Showing both the icon and text, if the icon is available.
@@ -247,7 +250,7 @@ where
 #[cfg(feature = "ui_debug")]
 impl<T> crate::trace::Trace for ChoiceItem<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ChoiceItem");

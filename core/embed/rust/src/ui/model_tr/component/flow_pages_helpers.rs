@@ -2,7 +2,7 @@
 //! (support for more Ops like alignments or arbitrary offsets)
 
 use crate::{
-    micropython::buffer::StrBuffer,
+    strutil::StringType,
     ui::{
         component::{
             text::layout::{LayoutFit, LayoutSink},
@@ -24,25 +24,31 @@ const PROCESSED_CHARS_ONE: usize = 1;
 /// Container for text allowing for its displaying by chunks
 /// without the need to allocate a new String each time.
 #[derive(Clone)]
-pub struct ToDisplay {
-    pub text: StrBuffer,
+pub struct ToDisplay<T> {
+    pub text: T,
     pub length_from_end: usize,
 }
 
-impl ToDisplay {
-    pub fn new(text: StrBuffer) -> Self {
+impl<T> ToDisplay<T>
+where
+    T: StringType,
+{
+    pub fn new(text: T) -> Self {
         Self {
             text: text.clone(),
-            length_from_end: text.len(),
+            length_from_end: text.as_ref().len(),
         }
     }
 }
 
 /// Operations that can be done on the screen.
 #[derive(Clone)]
-pub enum Op {
+pub enum Op<T>
+where
+    T: StringType,
+{
     /// Render text with current color and font.
-    Text(ToDisplay),
+    Text(ToDisplay<T>),
     /// Set current text color.
     Color(Color),
     /// Set currently used font.
@@ -58,9 +64,9 @@ pub enum Op {
 impl TextLayout {
     /// Perform some operations defined on `Op` for a list of those `Op`s
     /// - e.g. changing the color, changing the font or rendering the text.
-    pub fn layout_ops_new<const M: usize>(
+    pub fn layout_ops_new<const M: usize, T: StringType>(
         mut self,
-        ops: Vec<Op, M>,
+        ops: Vec<Op<T>, M>,
         cursor: &mut Point,
         skip_bytes: usize,
         sink: &mut dyn LayoutSink,

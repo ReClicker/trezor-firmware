@@ -1,25 +1,29 @@
-use super::{theme, ScrollBar};
 use crate::{
-    micropython::buffer::StrBuffer,
+    strutil::StringType,
     ui::{
         component::{Child, Component, ComponentExt, Event, EventCtx},
         geometry::{Insets, Rect},
     },
 };
 
-use super::{super::constant, scrollbar::SCROLLBAR_SPACE, title::Title};
+use super::{super::constant, scrollbar::SCROLLBAR_SPACE, theme, title::Title, ScrollBar};
 
 /// Component for holding another component and displaying a title.
-pub struct Frame<T> {
-    title: Title,
+pub struct Frame<T, U>
+where
+    T: Component,
+    U: StringType,
+{
+    title: Title<U>,
     content: Child<T>,
 }
 
-impl<T> Frame<T>
+impl<T, U> Frame<T, U>
 where
     T: Component,
+    U: StringType,
 {
-    pub fn new(title: StrBuffer, content: T) -> Self {
+    pub fn new(title: U, content: T) -> Self {
         Self {
             title: Title::new(title),
             content: Child::new(content),
@@ -40,7 +44,7 @@ where
         self.content.inner_mut()
     }
 
-    pub fn update_title(&mut self, ctx: &mut EventCtx, new_title: StrBuffer) {
+    pub fn update_title(&mut self, ctx: &mut EventCtx, new_title: U) {
         self.title.set_text(ctx, new_title);
     }
 
@@ -56,9 +60,10 @@ where
     }
 }
 
-impl<T> Component for Frame<T>
+impl<T, U> Component for Frame<T, U>
 where
     T: Component,
+    U: StringType,
 {
     type Msg = T::Msg;
 
@@ -91,15 +96,20 @@ pub trait ScrollableContent {
 
 /// Component for holding another component and displaying a title.
 /// Also is allocating space for a scrollbar.
-pub struct ScrollableFrame<T> {
-    title: Option<Child<Title>>,
+pub struct ScrollableFrame<T, U>
+where
+    T: Component + ScrollableContent,
+    U: StringType,
+{
+    title: Option<Child<Title<U>>>,
     scrollbar: ScrollBar,
     content: Child<T>,
 }
 
-impl<T> ScrollableFrame<T>
+impl<T, U> ScrollableFrame<T, U>
 where
     T: Component + ScrollableContent,
+    U: StringType,
 {
     pub fn new(content: T) -> Self {
         Self {
@@ -113,15 +123,16 @@ where
         self.content.inner()
     }
 
-    pub fn with_title(mut self, title: StrBuffer) -> Self {
+    pub fn with_title(mut self, title: U) -> Self {
         self.title = Some(Child::new(Title::new(title)));
         self
     }
 }
 
-impl<T> Component for ScrollableFrame<T>
+impl<T, U> Component for ScrollableFrame<T, U>
 where
     T: Component + ScrollableContent,
+    U: StringType,
 {
     type Msg = T::Msg;
 
@@ -185,9 +196,10 @@ where
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-impl<T> crate::trace::Trace for Frame<T>
+impl<T, U> crate::trace::Trace for Frame<T, U>
 where
-    T: crate::trace::Trace,
+    T: crate::trace::Trace + Component,
+    U: StringType,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("Frame");
@@ -197,9 +209,10 @@ where
 }
 
 #[cfg(feature = "ui_debug")]
-impl<T> crate::trace::Trace for ScrollableFrame<T>
+impl<T, U> crate::trace::Trace for ScrollableFrame<T, U>
 where
-    T: crate::trace::Trace,
+    T: crate::trace::Trace + Component + ScrollableContent,
+    U: StringType,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ScrollableFrame");

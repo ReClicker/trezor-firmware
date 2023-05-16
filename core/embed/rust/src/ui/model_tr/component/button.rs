@@ -1,4 +1,5 @@
 use crate::{
+    strutil::StringType,
     time::Duration,
     ui::{
         component::{Component, Event, EventCtx},
@@ -498,7 +499,7 @@ impl<T> ButtonDetails<T> {
 #[derive(Clone)]
 pub struct ButtonLayout<T>
 where
-    T: AsRef<str> + From<&'static str>,
+    T: StringType,
 {
     pub btn_left: Option<ButtonDetails<T>>,
     pub btn_middle: Option<ButtonDetails<T>>,
@@ -507,7 +508,7 @@ where
 
 impl<T> ButtonLayout<T>
 where
-    T: AsRef<str> + From<&'static str>,
+    T: StringType,
 {
     pub fn new(
         btn_left: Option<ButtonDetails<T>>,

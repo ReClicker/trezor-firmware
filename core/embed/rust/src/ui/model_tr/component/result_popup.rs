@@ -1,9 +1,9 @@
 use crate::{
-    micropython::buffer::StrBuffer,
+    strutil::StringType,
     time::Instant,
     ui::{
         component::{
-            text::paragraphs::{Paragraph, Paragraphs},
+            text::paragraphs::{Paragraph, ParagraphStrType, Paragraphs},
             Child, Component, ComponentExt, Event, EventCtx, Label, Pad,
         },
         constant::screen,
@@ -21,13 +21,16 @@ pub enum ResultPopupMsg {
     Confirmed,
 }
 
-pub struct ResultPopup {
+pub struct ResultPopup<T>
+where
+    T: StringType,
+{
     area: Rect,
     pad: Pad,
     result_anim: Child<ResultAnim>,
     headline: Option<Label<&'static str>>,
-    text: Child<Paragraphs<Paragraph<StrBuffer>>>,
-    buttons: Option<Child<ButtonController<StrBuffer>>>,
+    text: Child<Paragraphs<Paragraph<T>>>,
+    buttons: Option<Child<ButtonController<T>>>,
     autoclose: bool,
 }
 
@@ -37,10 +40,13 @@ const ANIM_POS: i16 = 32;
 const ANIM_POS_ADJ_HEADLINE: i16 = 10;
 const ANIM_POS_ADJ_BUTTON: i16 = 6;
 
-impl ResultPopup {
+impl<T> ResultPopup<T>
+where
+    T: StringType + ParagraphStrType,
+{
     pub fn new(
         icon: Icon,
-        text: StrBuffer,
+        text: T,
         headline: Option<&'static str>,
         button_text: Option<&'static str>,
     ) -> Self {
@@ -83,7 +89,10 @@ impl ResultPopup {
     }
 }
 
-impl Component for ResultPopup {
+impl<T> Component for ResultPopup<T>
+where
+    T: StringType + ParagraphStrType,
+{
     type Msg = ResultPopupMsg;
 
     fn place(&mut self, bounds: Rect) -> Rect {
@@ -156,7 +165,10 @@ impl Component for ResultPopup {
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-impl crate::trace::Trace for ResultPopup {
+impl<T> crate::trace::Trace for ResultPopup<T>
+where
+    T: StringType + ParagraphStrType,
+{
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ResultPopup");
         t.child("text", &self.text);

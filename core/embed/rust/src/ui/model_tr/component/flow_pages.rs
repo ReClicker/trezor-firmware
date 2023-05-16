@@ -1,5 +1,5 @@
 use crate::{
-    micropython::buffer::StrBuffer,
+    strutil::StringType,
     ui::{
         component::{
             text::{
@@ -14,6 +14,7 @@ use crate::{
     },
 };
 
+use core::marker::PhantomData;
 use heapless::Vec;
 
 use super::{
@@ -30,26 +31,32 @@ use super::{
 /// have theoretically unlimited number of pages without triggering SO.
 /// (Currently only the current page is stored on stack - in
 /// `Flow::current_page`.)
-pub struct FlowPages<F, const M: usize> {
+pub struct FlowPages<F, const M: usize, T>
+where
+    T: StringType,
+{
     /// Function/closure that will return appropriate page on demand.
     get_page: F,
     /// Number of pages in the flow.
     page_count: usize,
+    _phantom: PhantomData<T>,
 }
 
-impl<F, const M: usize> FlowPages<F, M>
+impl<F, const M: usize, T> FlowPages<F, M, T>
 where
-    F: Fn(usize) -> Page<M>,
+    F: Fn(usize) -> Page<M, T>,
+    T: StringType,
 {
     pub fn new(get_page: F, page_count: usize) -> Self {
         Self {
             get_page,
             page_count,
+            _phantom: PhantomData,
         }
     }
 
     /// Returns a page on demand on a specified index.
-    pub fn get(&self, page_index: usize) -> Page<M> {
+    pub fn get(&self, page_index: usize) -> Page<M, T> {
         (self.get_page)(page_index)
     }
 
@@ -78,21 +85,27 @@ where
 }
 
 #[derive(Clone)]
-pub struct Page<const M: usize> {
-    ops: Vec<Op, M>,
+pub struct Page<const M: usize, T>
+where
+    T: StringType,
+{
+    ops: Vec<Op<T>, M>,
     text_layout: TextLayout,
-    btn_layout: ButtonLayout<StrBuffer>,
+    btn_layout: ButtonLayout<T>,
     btn_actions: ButtonActions,
     current_page: usize,
     page_count: usize,
     char_offset: usize,
-    title: Option<StrBuffer>,
+    title: Option<T>,
 }
 
 // For `layout.rs`
-impl<const M: usize> Page<M> {
+impl<const M: usize, T> Page<M, T>
+where
+    T: StringType,
+{
     pub fn new(
-        btn_layout: ButtonLayout<StrBuffer>,
+        btn_layout: ButtonLayout<T>,
         btn_actions: ButtonActions,
         initial_text_font: Font,
     ) -> Self {
@@ -130,9 +143,12 @@ impl<const M: usize> Page<M> {
 }
 
 // For `flow.rs`
-impl<const M: usize> Page<M> {
+impl<const M: usize, T> Page<M, T>
+where
+    T: StringType,
+{
     /// Adding title.
-    pub fn with_title(mut self, title: StrBuffer) -> Self {
+    pub fn with_title(mut self, title: T) -> Self {
         self.title = Some(title);
         self
     }
@@ -148,7 +164,7 @@ impl<const M: usize> Page<M> {
         bounds
     }
 
-    pub fn btn_layout(&self) -> ButtonLayout<StrBuffer> {
+    pub fn btn_layout(&self) -> ButtonLayout<T> {
         // When we are in pagination inside this flow,
         // show the up and down arrows on appropriate sides.
         let current = self.btn_layout.clone();
@@ -178,7 +194,7 @@ impl<const M: usize> Page<M> {
         self.btn_actions
     }
 
-    pub fn title(&self) -> Option<StrBuffer> {
+    pub fn title(&self) -> Option<T> {
         self.title.clone()
     }
 
@@ -204,15 +220,18 @@ impl<const M: usize> Page<M> {
 }
 
 // For `layout.rs` - single operations
-impl<const M: usize> Page<M> {
-    pub fn with_new_item(mut self, item: Op) -> Self {
+impl<const M: usize, T> Page<M, T>
+where
+    T: StringType,
+{
+    pub fn with_new_item(mut self, item: Op<T>) -> Self {
         self.ops
             .push(item)
             .assert_if_debugging_ui("Could not push to self.ops");
         self
     }
 
-    pub fn text(self, text: StrBuffer) -> Self {
+    pub fn text(self, text: T) -> Self {
         self.with_new_item(Op::Text(ToDisplay::new(text)))
     }
 
@@ -242,22 +261,28 @@ impl<const M: usize> Page<M> {
 }
 
 // For `layout.rs` - aggregating operations
-impl<const M: usize> Page<M> {
-    pub fn text_normal(self, text: StrBuffer) -> Self {
+impl<const M: usize, T> Page<M, T>
+where
+    T: StringType,
+{
+    pub fn text_normal(self, text: T) -> Self {
         self.font(Font::NORMAL).text(text)
     }
 
-    pub fn text_mono(self, text: StrBuffer) -> Self {
+    pub fn text_mono(self, text: T) -> Self {
         self.font(Font::MONO).text(text)
     }
 
-    pub fn text_bold(self, text: StrBuffer) -> Self {
+    pub fn text_bold(self, text: T) -> Self {
         self.font(Font::BOLD).text(text)
     }
 }
 
 // For painting and pagination
-impl<const M: usize> Page<M> {
+impl<const M: usize, T> Page<M, T>
+where
+    T: StringType,
+{
     pub fn set_char_offset(&mut self, char_offset: usize) {
         self.char_offset = char_offset;
     }
@@ -270,7 +295,10 @@ impl<const M: usize> Page<M> {
 }
 
 // Pagination
-impl<const M: usize> Paginate for Page<M> {
+impl<const M: usize, T> Paginate for Page<M, T>
+where
+    T: StringType,
+{
     fn page_count(&mut self) -> usize {
         let mut page_count = 1; // There's always at least one page.
         let mut char_offset = 0;
@@ -334,7 +362,10 @@ impl<const M: usize> Paginate for Page<M> {
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-impl<const M: usize> crate::trace::Trace for Page<M> {
+impl<const M: usize, T> crate::trace::Trace for Page<M, T>
+where
+    T: StringType,
+{
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         use crate::ui::component::text::layout::trace::TraceSink;
         use core::cell::Cell;
@@ -342,7 +373,7 @@ impl<const M: usize> crate::trace::Trace for Page<M> {
         t.component("Page");
         if let Some(title) = &self.title {
             // Not calling it "title" as that is already traced by FlowPage
-            t.string("page_title", title);
+            t.string("page_title", title.as_ref());
         }
         t.int("active_page", self.current_page as i64);
         t.int("page_count", self.page_count as i64);

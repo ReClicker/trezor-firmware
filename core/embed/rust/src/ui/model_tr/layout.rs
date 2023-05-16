@@ -15,14 +15,15 @@ use crate::{
         qstr::Qstr,
         util,
     },
+    strutil::StringType,
     ui::{
         component::{
             base::Component,
             paginated::{PageMsg, Paginate},
             text::{
                 paragraphs::{
-                    Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
-                    Paragraphs, VecExt,
+                    Checklist, Paragraph, ParagraphSource, ParagraphStrType, ParagraphVecLong,
+                    ParagraphVecShort, Paragraphs, VecExt,
                 },
                 TextStyle,
             },
@@ -69,9 +70,10 @@ impl TryFrom<CancelConfirmMsg> for Obj {
     }
 }
 
-impl<T> ComponentMsgObj for ShowMore<T>
+impl<T, U> ComponentMsgObj for ShowMore<T, U>
 where
     T: Component,
+    U: StringType,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
@@ -95,9 +97,10 @@ where
     }
 }
 
-impl<T> ComponentMsgObj for ButtonPage<T>
+impl<T, U> ComponentMsgObj for ButtonPage<T, U>
 where
     T: Component + Paginate,
+    U: StringType,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
@@ -109,9 +112,10 @@ where
     }
 }
 
-impl<F, const M: usize> ComponentMsgObj for Flow<F, M>
+impl<F, const M: usize, T> ComponentMsgObj for Flow<F, M, T>
 where
-    F: Fn(usize) -> Page<M>,
+    F: Fn(usize) -> Page<M, T>,
+    T: StringType,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
@@ -123,7 +127,10 @@ where
     }
 }
 
-impl ComponentMsgObj for PinEntry {
+impl<T> ComponentMsgObj for PinEntry<T>
+where
+    T: StringType,
+{
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
             PinEntryMsg::Confirmed => self.pin().try_into(),
@@ -145,7 +152,10 @@ where
     }
 }
 
-impl ComponentMsgObj for AddressDetails {
+impl<T> ComponentMsgObj for AddressDetails<T>
+where
+    T: StringType + ParagraphStrType,
+{
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
             AddressDetailsMsg::Cancelled => Ok(CANCELLED.as_obj()),
@@ -153,13 +163,19 @@ impl ComponentMsgObj for AddressDetails {
     }
 }
 
-impl ComponentMsgObj for CoinJoinProgress {
+impl<T> ComponentMsgObj for CoinJoinProgress<T>
+where
+    T: StringType,
+{
     fn msg_try_into_obj(&self, _msg: Self::Msg) -> Result<Obj, Error> {
         unreachable!();
     }
 }
 
-impl ComponentMsgObj for NumberInput {
+impl<T> ComponentMsgObj for NumberInput<T>
+where
+    T: StringType,
+{
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
             NumberInputMsg::Number(choice) => choice.try_into(),
@@ -167,7 +183,10 @@ impl ComponentMsgObj for NumberInput {
     }
 }
 
-impl<const N: usize> ComponentMsgObj for SimpleChoice<N> {
+impl<const N: usize, T> ComponentMsgObj for SimpleChoice<N, T>
+where
+    T: StringType,
+{
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
             SimpleChoiceMsg::Result(choice) => choice.as_str().try_into(),
@@ -176,7 +195,10 @@ impl<const N: usize> ComponentMsgObj for SimpleChoice<N> {
     }
 }
 
-impl ComponentMsgObj for WordlistEntry {
+impl<T> ComponentMsgObj for WordlistEntry<T>
+where
+    T: StringType,
+{
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
             WordlistEntryMsg::ResultWord(word) => word.as_str().try_into(),
@@ -184,7 +206,10 @@ impl ComponentMsgObj for WordlistEntry {
     }
 }
 
-impl ComponentMsgObj for PassphraseEntry {
+impl<T> ComponentMsgObj for PassphraseEntry<T>
+where
+    T: StringType,
+{
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
             PassphraseEntryMsg::Confirmed => self.passphrase().try_into(),
@@ -193,31 +218,39 @@ impl ComponentMsgObj for PassphraseEntry {
     }
 }
 
-impl<T> ComponentMsgObj for Frame<T>
+impl<T, U> ComponentMsgObj for Frame<T, U>
 where
     T: ComponentMsgObj,
+    U: StringType,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         self.inner().msg_try_into_obj(msg)
     }
 }
 
-impl<T> ComponentMsgObj for ScrollableFrame<T>
+impl<T, U> ComponentMsgObj for ScrollableFrame<T, U>
 where
     T: ComponentMsgObj + ScrollableContent,
+    U: StringType,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         self.inner().msg_try_into_obj(msg)
     }
 }
 
-impl ComponentMsgObj for Progress {
+impl<T> ComponentMsgObj for Progress<T>
+where
+    T: StringType + ParagraphStrType,
+{
     fn msg_try_into_obj(&self, _msg: Self::Msg) -> Result<Obj, Error> {
         unreachable!()
     }
 }
 
-impl ComponentMsgObj for Homescreen {
+impl<T> ComponentMsgObj for Homescreen<T>
+where
+    T: StringType,
+{
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
             HomescreenMsg::Dismissed => Ok(CANCELLED.as_obj()),
@@ -225,7 +258,10 @@ impl ComponentMsgObj for Homescreen {
     }
 }
 
-impl ComponentMsgObj for Lockscreen {
+impl<T> ComponentMsgObj for Lockscreen<T>
+where
+    T: StringType,
+{
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
             HomescreenMsg::Dismissed => Ok(CANCELLED.as_obj()),
@@ -529,7 +565,7 @@ extern "C" fn new_confirm_output(n_args: usize, args: *const Obj, kwargs: *mut M
                     let btn_layout = ButtonLayout::cancel_none_text("CONFIRM".into());
                     let btn_actions = ButtonActions::cancel_none_next();
                     // Not putting hyphens in the address
-                    Page::<10>::new(btn_layout, btn_actions, Font::MONO)
+                    Page::<10, StrBuffer>::new(btn_layout, btn_actions, Font::MONO)
                         .with_line_breaking(LineBreaking::BreakWordsNoHyphen)
                         .with_title(address_title.clone())
                         .text_mono(address.clone())
@@ -538,7 +574,7 @@ extern "C" fn new_confirm_output(n_args: usize, args: *const Obj, kwargs: *mut M
                     // AMOUNT + amount
                     let btn_layout = ButtonLayout::up_arrow_none_text("CONFIRM".into());
                     let btn_actions = ButtonActions::prev_none_confirm();
-                    Page::<10>::new(btn_layout, btn_actions, Font::MONO)
+                    Page::<10, StrBuffer>::new(btn_layout, btn_actions, Font::MONO)
                         .with_title(amount_title.clone())
                         .newline()
                         .text_mono(amount.clone())
@@ -571,7 +607,7 @@ extern "C" fn new_confirm_total(n_args: usize, args: *const Obj, kwargs: *mut Ma
             let btn_layout = ButtonLayout::cancel_none_htc("HOLD TO CONFIRM".into());
             let btn_actions = ButtonActions::cancel_none_confirm();
 
-            let mut flow_page = Page::<15>::new(btn_layout, btn_actions, Font::MONO)
+            let mut flow_page = Page::<15, StrBuffer>::new(btn_layout, btn_actions, Font::MONO)
                 .text_bold(total_label.clone())
                 .newline()
                 .text_mono(total_amount.clone())
@@ -605,7 +641,7 @@ extern "C" fn new_confirm_address(n_args: usize, args: *const Obj, kwargs: *mut 
 
             let btn_layout = ButtonLayout::cancel_armed_text("CONFIRM".into(), "i".into());
             let btn_actions = ButtonActions::cancel_confirm_info();
-            Page::<15>::new(btn_layout, btn_actions, Font::BOLD)
+            Page::<15, StrBuffer>::new(btn_layout, btn_actions, Font::BOLD)
                 .with_line_breaking(LineBreaking::BreakWordsNoHyphen)
                 .text_mono(address.clone())
         };
@@ -624,8 +660,8 @@ fn tutorial_screen(
     text: StrBuffer,
     btn_layout: ButtonLayout<StrBuffer>,
     btn_actions: ButtonActions,
-) -> Page<10> {
-    let mut page = Page::<10>::new(
+) -> Page<10, StrBuffer> {
+    let mut page = Page::<10, StrBuffer>::new(
         btn_layout,
         btn_actions,
         if !title.is_empty() {
@@ -696,7 +732,7 @@ extern "C" fn tutorial(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj
                 },
                 // This page is special
                 5 => {
-                    Page::<10>::new(
+                    Page::<10, StrBuffer>::new(
                         ButtonLayout::text_none_text("AGAIN".into(), "FINISH".into()),
                         ButtonActions::beginning_none_confirm(),
                         Font::MONO,
@@ -814,7 +850,7 @@ extern "C" fn new_confirm_fido(n_args: usize, args: *const Obj, kwargs: *mut Map
                 )
             };
 
-            Page::<10>::new(btn_layout, btn_actions, Font::MONO)
+            Page::<10, StrBuffer>::new(btn_layout, btn_actions, Font::MONO)
                 .newline()
                 .text_mono(app_name.clone())
                 .newline()
@@ -870,7 +906,7 @@ extern "C" fn new_show_mismatch() -> Obj {
 
             let btn_layout = ButtonLayout::arrow_none_text("QUIT".into());
             let btn_actions = ButtonActions::cancel_none_confirm();
-            Page::<15>::new(btn_layout, btn_actions, Font::MONO)
+            Page::<15, StrBuffer>::new(btn_layout, btn_actions, Font::MONO)
                 .text_bold("ADDRESS MISMATCH?".into())
                 .newline()
                 .newline_half()
@@ -907,7 +943,9 @@ extern "C" fn new_confirm_with_info(n_args: usize, args: *const Obj, kwargs: *mu
 
         let obj = LayoutObj::new(Frame::new(
             title,
-            ShowMore::new(paragraphs.into_paragraphs()),
+            ShowMore::<Paragraphs<Vec<Paragraph<StrBuffer>, 8>>, StrBuffer>::new(
+                paragraphs.into_paragraphs(),
+            ),
         ))?;
         Ok(obj.into())
     };
@@ -952,7 +990,9 @@ extern "C" fn new_request_passphrase(n_args: usize, args: *const Obj, kwargs: *m
     let block = |_args: &[Obj], kwargs: &Map| {
         let prompt: StrBuffer = kwargs.get(Qstr::MP_QSTR_prompt)?.try_into()?;
 
-        let obj = LayoutObj::new(Frame::new(prompt, PassphraseEntry::new()).with_title_centered())?;
+        let obj = LayoutObj::new(
+            Frame::new(prompt, PassphraseEntry::<StrBuffer>::new()).with_title_centered(),
+        )?;
         Ok(obj.into())
     };
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
@@ -963,7 +1003,8 @@ extern "C" fn new_request_bip39(n_args: usize, args: *const Obj, kwargs: *mut Ma
         let prompt: StrBuffer = kwargs.get(Qstr::MP_QSTR_prompt)?.try_into()?;
 
         let obj = LayoutObj::new(
-            Frame::new(prompt, WordlistEntry::new(WordlistType::Bip39)).with_title_centered(),
+            Frame::new(prompt, WordlistEntry::<StrBuffer>::new(WordlistType::Bip39))
+                .with_title_centered(),
         )?;
         Ok(obj.into())
     };
@@ -975,7 +1016,11 @@ extern "C" fn new_request_slip39(n_args: usize, args: *const Obj, kwargs: *mut M
         let prompt: StrBuffer = kwargs.get(Qstr::MP_QSTR_prompt)?.try_into()?;
 
         let obj = LayoutObj::new(
-            Frame::new(prompt, WordlistEntry::new(WordlistType::Slip39)).with_title_centered(),
+            Frame::new(
+                prompt,
+                WordlistEntry::<StrBuffer>::new(WordlistType::Slip39),
+            )
+            .with_title_centered(),
         )?;
         Ok(obj.into())
     };
@@ -1010,8 +1055,9 @@ extern "C" fn new_show_share_words(n_args: usize, args: *const Obj, kwargs: *mut
         let share_words_obj: Obj = kwargs.get(Qstr::MP_QSTR_share_words)?;
         let share_words: Vec<StrBuffer, 33> = iter_into_vec(share_words_obj)?;
 
-        let confirm_btn =
-            Some(ButtonDetails::text("HOLD TO CONFIRM".into()).with_default_duration());
+        let confirm_btn = Some(
+            ButtonDetails::<StrBuffer>::text("HOLD TO CONFIRM".into()).with_default_duration(),
+        );
 
         let obj = LayoutObj::new(
             ButtonPage::new(ShareWords::new(title, share_words), theme::BG)
@@ -1030,7 +1076,11 @@ extern "C" fn new_request_number(n_args: usize, args: *const Obj, kwargs: *mut M
         let count: u32 = kwargs.get(Qstr::MP_QSTR_count)?.try_into()?;
 
         let obj = LayoutObj::new(
-            Frame::new(title, NumberInput::new(min_count, max_count, count)).with_title_centered(),
+            Frame::new(
+                title,
+                NumberInput::<StrBuffer>::new(min_count, max_count, count),
+            )
+            .with_title_centered(),
         )?;
         Ok(obj.into())
     };
@@ -1100,7 +1150,7 @@ extern "C" fn new_confirm_recovery(n_args: usize, args: *const Obj, kwargs: *mut
 
 extern "C" fn new_select_word_count(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = |_args: &[Obj], _kwargs: &Map| {
-        let title = "NUMBER OF WORDS".into();
+        let title: StrBuffer = "NUMBER OF WORDS".into();
 
         let choices: Vec<StrBuffer, 5> = ["12", "18", "20", "24", "33"]
             .map(|num| num.into())

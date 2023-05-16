@@ -1,4 +1,5 @@
 use crate::{
+    strutil::StringType,
     trezorhal::wordlist::Wordlist,
     ui::{
         component::{text::common::TextBox, Child, Component, ComponentExt, Event, EventCtx},
@@ -11,7 +12,6 @@ use crate::{
 use super::super::{
     theme, ButtonLayout, ChangingTextLine, ChoiceFactory, ChoiceItem, ChoicePage, ChoicePageMsg,
 };
-use crate::micropython::buffer::StrBuffer;
 use heapless::{String, Vec};
 
 pub enum WordlistEntryMsg {
@@ -52,20 +52,29 @@ impl ChoiceFactoryWordlist {
     fn words(word_choices: Vec<&'static str, OFFER_WORDS_THRESHOLD>) -> Self {
         Self::Words(word_choices)
     }
-}
 
-impl ChoiceFactory<StrBuffer> for ChoiceFactoryWordlist {
-    type Item = ChoiceItem<StrBuffer>;
-
-    fn count(&self) -> usize {
+    /// NOTE: done to remediate some type-inconsistencies
+    /// with using self.count() in self.get()
+    fn self_count(&self) -> usize {
         // Accounting for the DELETE option
         match self {
             Self::Letters(letter_choices) => letter_choices.len() + 1,
             Self::Words(word_choices) => word_choices.len() + 1,
         }
     }
+}
 
-    fn get(&self, choice_index: usize) -> ChoiceItem<StrBuffer> {
+impl<T> ChoiceFactory<T> for ChoiceFactoryWordlist
+where
+    T: StringType,
+{
+    type Item = ChoiceItem<T>;
+
+    fn count(&self) -> usize {
+        self.self_count()
+    }
+
+    fn get(&self, choice_index: usize) -> ChoiceItem<T> {
         // Letters have a carousel, words do not
         // Putting DELETE as the first option in both cases
         // (is a requirement for WORDS, doing it for LETTERS as well to unite it)
@@ -89,7 +98,7 @@ impl ChoiceFactory<StrBuffer> for ChoiceFactoryWordlist {
                 } else {
                     let word = word_choices[choice_index - 1];
                     let mut item = ChoiceItem::new(word, ButtonLayout::default_three_icons());
-                    if choice_index == self.count() - 1 {
+                    if choice_index == self.self_count() - 1 {
                         item.set_right_btn(None);
                     }
                     item
@@ -100,8 +109,11 @@ impl ChoiceFactory<StrBuffer> for ChoiceFactoryWordlist {
 }
 
 /// Component for entering a mnemonic from a wordlist - BIP39 or SLIP39.
-pub struct WordlistEntry {
-    choice_page: ChoicePage<ChoiceFactoryWordlist, StrBuffer>,
+pub struct WordlistEntry<T>
+where
+    T: StringType,
+{
+    choice_page: ChoicePage<ChoiceFactoryWordlist, T>,
     chosen_letters: Child<ChangingTextLine<String<{ MAX_WORD_LENGTH + 1 }>>>,
     letter_choices: Vec<char, MAX_LETTERS_LENGTH>,
     textbox: TextBox<MAX_WORD_LENGTH>,
@@ -110,7 +122,10 @@ pub struct WordlistEntry {
     wordlist_type: WordlistType,
 }
 
-impl WordlistEntry {
+impl<T> WordlistEntry<T>
+where
+    T: StringType,
+{
     pub fn new(wordlist_type: WordlistType) -> Self {
         let words_list = Self::get_fresh_wordlist(&wordlist_type);
         let letter_choices: Vec<char, MAX_LETTERS_LENGTH> =
@@ -198,7 +213,10 @@ impl WordlistEntry {
     }
 }
 
-impl Component for WordlistEntry {
+impl<T> Component for WordlistEntry<T>
+where
+    T: StringType,
+{
     type Msg = WordlistEntryMsg;
 
     fn place(&mut self, bounds: Rect) -> Rect {
@@ -250,7 +268,10 @@ use super::super::{ButtonAction, ButtonPos};
 use crate::ui::util;
 
 #[cfg(feature = "ui_debug")]
-impl crate::trace::Trace for WordlistEntry {
+impl<T> crate::trace::Trace for WordlistEntry<T>
+where
+    T: StringType,
+{
     fn get_btn_action(&self, pos: ButtonPos) -> String<25> {
         match pos {
             ButtonPos::Left => ButtonAction::PrevPage.string(),

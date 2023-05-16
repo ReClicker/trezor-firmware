@@ -1,6 +1,9 @@
-use crate::ui::{
-    component::{Child, Component, Event, EventCtx},
-    geometry::{Insets, Rect},
+use crate::{
+    strutil::StringType,
+    ui::{
+        component::{Child, Component, Event, EventCtx},
+        geometry::{Insets, Rect},
+    },
 };
 
 use super::{theme, ButtonController, ButtonControllerMsg, ButtonLayout, ButtonPos};
@@ -11,14 +14,18 @@ pub enum CancelInfoConfirmMsg {
     Confirmed,
 }
 
-pub struct ShowMore<T> {
+pub struct ShowMore<T, U>
+where
+    U: StringType,
+{
     content: Child<T>,
-    buttons: Child<ButtonController<StrBuffer>>,
+    buttons: Child<ButtonController<U>>,
 }
 
-impl<T> ShowMore<T>
+impl<T, U> ShowMore<T, U>
 where
     T: Component,
+    U: StringType,
 {
     pub fn new(content: T) -> Self {
         let btn_layout = ButtonLayout::cancel_armed_text("CONFIRM".into(), "i".into());
@@ -29,9 +36,10 @@ where
     }
 }
 
-impl<T> Component for ShowMore<T>
+impl<T, U> Component for ShowMore<T, U>
 where
     T: Component,
+    U: StringType,
 {
     type Msg = CancelInfoConfirmMsg;
 
@@ -72,14 +80,14 @@ where
 
 #[cfg(feature = "ui_debug")]
 use super::ButtonAction;
-use crate::micropython::buffer::StrBuffer;
 #[cfg(feature = "ui_debug")]
 use heapless::String;
 
 #[cfg(feature = "ui_debug")]
-impl<T> crate::trace::Trace for ShowMore<T>
+impl<T, U> crate::trace::Trace for ShowMore<T, U>
 where
     T: crate::trace::Trace + Component,
+    U: StringType,
 {
     fn get_btn_action(&self, pos: ButtonPos) -> String<25> {
         match pos {

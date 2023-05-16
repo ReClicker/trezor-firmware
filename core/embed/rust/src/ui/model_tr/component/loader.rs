@@ -1,4 +1,5 @@
 use crate::{
+    strutil::StringType,
     time::{Duration, Instant},
     ui::{
         animation::Animation,
@@ -25,7 +26,7 @@ enum State {
 
 pub struct Loader<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     area: Rect,
     state: State,
@@ -37,7 +38,7 @@ where
 
 impl<T> Loader<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     pub const SIZE: Offset = Offset::new(120, 120);
 
@@ -169,7 +170,7 @@ where
 
 impl<T> Component for Loader<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     type Msg = LoaderMsg;
 
@@ -257,7 +258,7 @@ impl LoaderStyleSheet {
 #[cfg(feature = "ui_debug")]
 impl<T> crate::trace::Trace for Loader<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("Loader");

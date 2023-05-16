@@ -1,4 +1,5 @@
 use crate::{
+    strutil::StringType,
     time::{Duration, Instant},
     ui::{
         component::{Component, Event, EventCtx},
@@ -18,7 +19,7 @@ pub enum HoldToConfirmMsg {
 
 pub struct HoldToConfirm<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     pos: ButtonPos,
     loader: Loader<T>,
@@ -27,7 +28,7 @@ where
 
 impl<T> HoldToConfirm<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     pub fn text(pos: ButtonPos, text: T, styles: LoaderStyleSheet, duration: Duration) -> Self {
         let text_width = styles.normal.font.visible_text_width(text.as_ref());
@@ -85,7 +86,7 @@ where
 
 impl<T> Component for HoldToConfirm<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     type Msg = HoldToConfirmMsg;
 
@@ -129,7 +130,7 @@ where
 #[cfg(feature = "ui_debug")]
 impl<T> crate::trace::Trace for HoldToConfirm<T>
 where
-    T: AsRef<str> + Clone + From<&'static str>,
+    T: StringType,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("HoldToConfirm");
