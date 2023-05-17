@@ -179,21 +179,31 @@ mod tests {
     }
     #[test]
     fn test_get_available_letters() {
-        let expected_result = vec!['a', 'i', 'l', 'o', 's', 'u'];
         let result = Wordlist::bip39()
             .get_available_letters("ab")
             .collect::<Vec<_>>();
+        let expected_result = vec!['a', 'i', 'l', 'o', 's', 'u'];
         assert_eq!(result, expected_result);
 
-        let expected_result = vec!['a', 'e', 'i', 'o', 'u'];
         let result = Wordlist::bip39()
             .get_available_letters("str")
             .collect::<Vec<_>>();
+        let expected_result = vec!['a', 'e', 'i', 'o', 'u'];
         assert_eq!(result, expected_result);
 
         let result = Wordlist::bip39()
             .get_available_letters("zoo")
             .collect::<Vec<_>>();
-        assert_eq!(result.len(), 0);
+        let expected_result = vec![];
+        assert_eq!(result, expected_result);
+
+        let result = Wordlist::bip39()
+            .get_available_letters("")
+            .collect::<Vec<_>>();
+        let expected_result = vec![
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
+            'r', 's', 't', 'u', 'v', 'w', 'y', 'z',
+        ];
+        assert_eq!(result, expected_result);
     }
 }
