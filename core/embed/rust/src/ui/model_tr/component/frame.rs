@@ -1,7 +1,7 @@
 use crate::{
     strutil::StringType,
     ui::{
-        component::{Child, Component, ComponentExt, Event, EventCtx},
+        component::{Child, Component, ComponentExt, Event, EventCtx, Paginate},
         geometry::{Insets, Rect},
     },
 };
@@ -38,10 +38,6 @@ where
 
     pub fn inner(&self) -> &T {
         self.content.inner()
-    }
-
-    pub fn inner_mut(&mut self) -> &mut T {
-        self.content.inner_mut()
     }
 
     pub fn update_title(&mut self, ctx: &mut EventCtx, new_title: U) {
@@ -86,6 +82,20 @@ where
     fn paint(&mut self) {
         self.title.paint();
         self.content.paint();
+    }
+}
+
+impl<T, U> Paginate for Frame<T, U>
+where
+    T: Component + Paginate,
+    U: StringType,
+{
+    fn page_count(&mut self) -> usize {
+        self.content.inner_mut().page_count()
+    }
+
+    fn change_page(&mut self, active_page: usize) {
+        self.content.inner_mut().change_page(active_page);
     }
 }
 

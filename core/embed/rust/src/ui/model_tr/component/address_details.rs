@@ -106,16 +106,17 @@ where
 
     fn subpages_in_current_page(&mut self) -> usize {
         if self.is_xpub_page() {
-            self.xpub_view.inner_mut().page_count()
+            self.xpub_view.page_count()
         } else {
             1
         }
     }
 
-    // Button layout for the current page.
-    // Normally there are arrows everywhere, apart from the right side of the last
-    // page. On xpub pages there is VIEW FULL middle button when it cannot fit
-    // one page. On xpub subpages there are wide arrows to scroll.
+    /// Button layout for the current page.
+    /// Normally there are arrows everywhere, apart from the right side of the
+    /// last page. On xpub pages there is VIEW FULL middle button when it
+    /// cannot fit one page. On xpub subpages there are wide arrows to
+    /// scroll.
     fn get_button_layout(&mut self) -> ButtonLayout<T> {
         let (left, middle, right) = if self.is_in_subpage() {
             let left = Some(ButtonDetails::up_arrow_icon_wide());
