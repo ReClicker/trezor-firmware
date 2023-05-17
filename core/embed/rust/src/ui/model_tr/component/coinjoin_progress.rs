@@ -1,8 +1,10 @@
 use crate::{
     strutil::StringType,
     ui::{
-        component::{base::Never, Component, Event, EventCtx},
-        display::{text_multiline_split_words, Font},
+        component::{
+            base::Never, text::util::text_multiline_split_words, Component, Event, EventCtx,
+        },
+        display::Font,
         geometry::{Alignment, Rect},
     },
 };

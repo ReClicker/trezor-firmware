@@ -1,8 +1,11 @@
 use crate::{
     strutil::StringType,
     ui::{
-        component::{Child, Component, Event, EventCtx, Never, Paginate},
-        display::{text_multiline_split_words, Font},
+        component::{
+            text::util::text_multiline_split_words, Child, Component, Event, EventCtx, Never,
+            Paginate,
+        },
+        display::Font,
         geometry::{Alignment, Offset, Rect},
     },
 };
