@@ -1,5 +1,5 @@
 use crate::ui::{
-    component::{Component, Event, EventCtx, Never, Pad},
+    component::{Component, Event, EventCtx, Never, Pad, Paginate},
     display,
     geometry::{Offset, Point, Rect},
 };
@@ -61,12 +61,6 @@ impl ScrollBar {
 
     pub fn set_page_count(&mut self, page_count: usize) {
         self.page_count = page_count;
-    }
-
-    pub fn set_active_page(&mut self, active_page: usize) {
-        if active_page != self.active_page {
-            self.active_page = active_page;
-        }
     }
 
     /// Create a (seemingly circular) dot given its top left point.
@@ -237,6 +231,16 @@ impl Component for ScrollBar {
         self.pad.clear();
         self.pad.paint();
         self.paint_horizontal();
+    }
+}
+
+impl Paginate for ScrollBar {
+    fn page_count(&mut self) -> usize {
+        self.page_count
+    }
+
+    fn change_page(&mut self, active_page: usize) {
+        self.active_page = active_page;
     }
 }
 

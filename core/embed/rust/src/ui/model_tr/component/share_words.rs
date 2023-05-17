@@ -205,7 +205,7 @@ where
 
     fn change_page(&mut self, active_page: usize) {
         self.page_index = active_page;
-        self.scrollbar.inner_mut().set_active_page(active_page);
+        self.scrollbar.change_page(active_page);
     }
 }
 

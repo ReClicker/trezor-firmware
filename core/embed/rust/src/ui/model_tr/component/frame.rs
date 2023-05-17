@@ -91,11 +91,11 @@ where
     U: StringType,
 {
     fn page_count(&mut self) -> usize {
-        self.content.inner_mut().page_count()
+        self.content.page_count()
     }
 
     fn change_page(&mut self, active_page: usize) {
-        self.content.inner_mut().change_page(active_page);
+        self.content.change_page(active_page);
     }
 }
 
@@ -190,7 +190,7 @@ where
         let msg = self.content.event(ctx, event);
         let content_active_page = self.content.inner().active_page();
         if self.scrollbar.active_page != content_active_page {
-            self.scrollbar.set_active_page(content_active_page);
+            self.scrollbar.change_page(content_active_page);
             self.scrollbar.request_complete_repaint(ctx);
         }
         self.title.event(ctx, event);

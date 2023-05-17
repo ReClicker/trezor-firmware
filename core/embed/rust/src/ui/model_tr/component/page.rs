@@ -180,7 +180,7 @@ where
             .place(content_area.inset(Insets::top(constant::LINE_SPACE)));
         // Need to be called here, only after content is placed
         // and we can calculate the page count.
-        self.page_count = self.content.inner_mut().page_count();
+        self.page_count = self.content.page_count();
         self.set_buttons_for_initial_page(self.page_count);
         self.buttons.place(button_area);
         bounds

@@ -1,7 +1,7 @@
 use crate::{
     strutil::StringType,
     ui::{
-        component::{Child, Component, ComponentExt, Event, EventCtx, Pad},
+        component::{Child, Component, ComponentExt, Event, EventCtx, Pad, Paginate},
         geometry::Rect,
     },
 };
@@ -91,7 +91,7 @@ where
             .pages
             .scrollbar_page_index(self.content_area, self.page_counter);
         self.scrollbar.mutate(ctx, |_ctx, scrollbar| {
-            scrollbar.set_active_page(scrollbar_active_index);
+            scrollbar.change_page(scrollbar_active_index);
         });
     }
 
@@ -159,7 +159,7 @@ where
             self.current_page.go_to_prev_page();
             let inner_page = self.current_page.get_current_page();
             self.scrollbar.mutate(ctx, |ctx, scrollbar| {
-                scrollbar.set_active_page(self.page_counter + inner_page);
+                scrollbar.change_page(self.page_counter + inner_page);
                 scrollbar.request_complete_repaint(ctx);
             });
             self.update(ctx, false);
@@ -168,7 +168,7 @@ where
             self.current_page.go_to_next_page();
             let inner_page = self.current_page.get_current_page();
             self.scrollbar.mutate(ctx, |ctx, scrollbar| {
-                scrollbar.set_active_page(self.page_counter + inner_page);
+                scrollbar.change_page(self.page_counter + inner_page);
                 scrollbar.request_complete_repaint(ctx);
             });
             self.update(ctx, false);
@@ -198,9 +198,8 @@ where
 
         // Finding out the total amount of pages in this flow
         let complete_page_count = self.pages.scrollbar_page_count(content_area);
-        self.scrollbar
-            .inner_mut()
-            .set_page_count(complete_page_count);
+        // Redefining scrollbar now when we have its page_count
+        self.scrollbar = Child::new(ScrollBar::new(complete_page_count));
 
         // Placing a title and scrollbar in case the title is there
         // (scrollbar will be active - counting pages - even when not placed and
