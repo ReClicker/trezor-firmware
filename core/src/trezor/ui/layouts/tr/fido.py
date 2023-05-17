@@ -36,6 +36,11 @@ async def confirm_fido(
     if isinstance(result, int):
         return result
 
+    # For the usage in device tests, assuming CONFIRMED (sent by debuglink)
+    # is choosing the first credential.
+    if __debug__ and result is trezorui2.CONFIRMED:
+        return 0
+
     # Late import won't get executed on the happy path.
     from trezor.wire import ActionCancelled
 
