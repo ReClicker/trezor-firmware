@@ -10,12 +10,6 @@ use super::{
     choice_item::ChoiceItem,
 };
 
-pub enum ChoicePageMsg {
-    Choice(usize),
-    LeftMost,
-    RightMost,
-}
-
 const DEFAULT_ITEMS_DISTANCE: i16 = 10;
 const DEFAULT_Y_BASELINE: i16 = 20;
 
@@ -43,13 +37,11 @@ where
 /// but offers a "lazy-loading" way of requesting the
 /// items only when they are needed, one-by-one.
 /// This way, no more than one item is stored in memory at any time.
-pub trait ChoiceFactory<T>
-where
-    T: StringType,
-{
-    type Item: Choice<T> + MaybeTrace;
+pub trait ChoiceFactory {
+    type Action;
+
     fn count(&self) -> usize;
-    fn get(&self, index: usize) -> ChoiceItem;
+    fn get(&self, index: usize) -> (ChoiceItem, Self::Action);
 }
 
 /// General component displaying a set of items on the screen
@@ -65,19 +57,15 @@ where
 ///
 /// `is_carousel` can be used to make the choice page "infinite" -
 /// after reaching one end, users will appear at the other end.
-pub struct ChoicePage<F>
+pub struct ChoicePage<F, A>
 where
-    F: ChoiceFactory<T>,
-    T: StringType,
+    F: ChoiceFactory<Action = A>,
 {
     choices: F,
     pad: Pad,
-    buttons: Child<ButtonController<&'static str>>,
     page_counter: usize,
     /// How many pixels from top should we render the items.
-    y_baseline: i16,
     /// How many pixels are between the items.
-    items_distance: i16,
     /// Whether the choice page is "infinite" (carousel).
     is_carousel: bool,
     /// Whether we should show items on left/right even when they cannot
@@ -90,13 +78,12 @@ where
     inverse_selected_item: bool,
 }
 
-impl<F> ChoicePage<F>
+impl<F, A> ChoicePage<F, A>
 where
-    F: ChoiceFactory<T>,
-    T: StringType,
+    F: ChoiceFactory<Action = A>,
 {
     pub fn new(choices: F) -> Self {
-        let initial_btn_layout = choices.get(0).btn_layout();
+        let initial_btn_layout = choices.get(0).0.btn_layout();
 
         Self {
             choices,
@@ -116,7 +103,7 @@ where
     /// Need to update the initial button layout.
     pub fn with_initial_page_counter(mut self, page_counter: usize) -> Self {
         self.page_counter = page_counter;
-        let initial_btn_layout = self.choices.get(page_counter).btn_layout();
+        let initial_btn_layout = self.choices.get(page_counter).0.btn_layout();
         self.buttons = Child::new(ButtonController::new(initial_btn_layout));
         self
     }
@@ -191,7 +178,7 @@ where
         }
 
         // Getting the remaining left and right areas.
-        let center_width = self.choices.get(self.page_counter).width_center();
+        let center_width = self.choices.get(self.page_counter).0.width_center();
         let (left_area, _center_area, right_area) = available_area.split_center(center_width);
 
         // Possibly drawing on the left side.
@@ -236,6 +223,7 @@ where
     fn show_current_choice(&mut self, area: Rect) {
         self.choices
             .get(self.page_counter)
+            .0
             .paint_center(area, self.inverse_selected_item);
 
         // Color inversion is just one-time thing.
@@ -262,7 +250,7 @@ where
                 }
             }
 
-            let choice = self.choices.get(page_index as usize);
+            let (choice, _) = self.choices.get(page_index as usize);
             let choice_width = choice.width_side();
 
             if current_area.width() <= choice_width && !self.show_incomplete {
@@ -316,7 +304,7 @@ where
                 }
             }
 
-            let choice = self.choices.get(page_index);
+            let (choice, _) = self.choices.get(page_index);
             let choice_width = choice.width_side();
 
             if current_area.width() <= choice_width && !self.show_incomplete {
@@ -385,19 +373,18 @@ where
     /// If defined in the current choice, setting their text,
     /// whether they are long-pressed, and painting them.
     fn set_buttons(&mut self, ctx: &mut EventCtx) {
-        let btn_layout = self.choices.get(self.page_counter).btn_layout();
+        let btn_layout = self.choices.get(self.page_counter).0.btn_layout();
         self.buttons.mutate(ctx, |_ctx, buttons| {
             buttons.set(btn_layout);
         });
     }
 }
 
-impl<F> Component for ChoicePage<F>
+impl<F, A> Component for ChoicePage<F, A>
 where
-    F: ChoiceFactory<T>,
-    T: StringType,
+    F: ChoiceFactory<Action = A>,
 {
-    type Msg = ChoicePageMsg;
+    type Msg = A;
 
     fn place(&mut self, bounds: Rect) -> Rect {
         let (content_area, button_area) = bounds.split_bottom(theme::BUTTON_HEIGHT);
@@ -421,10 +408,6 @@ where
                         // In case of carousel going to the right end.
                         self.page_counter_to_max();
                         self.update(ctx);
-                    } else {
-                        // Triggered LEFTmost button. Send event
-                        self.clear_and_repaint(ctx);
-                        return Some(ChoicePageMsg::LeftMost);
                     }
                 }
                 ButtonPos::Right => {
@@ -436,16 +419,12 @@ where
                         // In case of carousel going to the left end.
                         self.page_counter_to_zero();
                         self.update(ctx);
-                    } else {
-                        // Triggered RIGHTmost button. Send event
-                        self.clear_and_repaint(ctx);
-                        return Some(ChoicePageMsg::RightMost);
                     }
                 }
                 ButtonPos::Middle => {
                     // Clicked SELECT. Send current choice index
                     self.clear_and_repaint(ctx);
-                    return Some(ChoicePageMsg::Choice(self.page_counter));
+                    return Some(self.choices.get(self.page_counter).1);
                 }
             }
         };
@@ -468,10 +447,9 @@ where
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-impl<F> crate::trace::Trace for ChoicePage<F>
+impl<F, A> crate::trace::Trace for ChoicePage<F, A>
 where
-    F: ChoiceFactory<T>,
-    T: StringType,
+    F: ChoiceFactory<Action = A>,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ChoicePage");
@@ -480,19 +458,19 @@ where
         t.bool("is_carousel", self.is_carousel);
 
         if self.has_previous_choice() {
-            t.child("prev_choice", &self.choices.get(self.page_counter - 1));
+            t.child("prev_choice", &self.choices.get(self.page_counter - 1).0);
         } else if self.is_carousel {
             // In case of carousel going to the left end.
-            t.child("prev_choice", &self.choices.get(self.last_page_index()));
+            t.child("prev_choice", &self.choices.get(self.last_page_index()).0);
         }
 
-        t.child("current_choice", &self.choices.get(self.page_counter));
+        t.child("current_choice", &self.choices.get(self.page_counter).0);
 
         if self.has_next_choice() {
-            t.child("next_choice", &self.choices.get(self.page_counter + 1));
+            t.child("next_choice", &self.choices.get(self.page_counter + 1).0);
         } else if self.is_carousel {
             // In case of carousel going to the very left.
-            t.child("next_choice", &self.choices.get(0));
+            t.child("next_choice", &self.choices.get(0).0);
         }
 
         t.child("buttons", &self.buttons);

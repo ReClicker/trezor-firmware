@@ -10,7 +10,6 @@ use crate::{
 
 use super::super::{
     theme, ButtonDetails, ButtonLayout, ChangingTextLine, ChoiceFactory, ChoiceItem, ChoicePage,
-    ChoicePageMsg,
 };
 use core::marker::PhantomData;
 use heapless::String;
@@ -20,6 +19,14 @@ pub enum PinEntryMsg {
     Cancelled,
 }
 
+#[derive(Clone, Copy)]
+enum PinAction {
+    Delete,
+    Show,
+    Enter,
+    Digit(char),
+}
+
 const MAX_PIN_LENGTH: usize = 50;
 
 const CHOICE_LENGTH: usize = 13;
@@ -27,60 +34,44 @@ const DELETE_INDEX: usize = 0;
 const SHOW_INDEX: usize = 1;
 const ENTER_INDEX: usize = 2;
 const NUMBER_START_INDEX: usize = 3;
-const CHOICES: [&str; CHOICE_LENGTH] = [
-    "DELETE", "SHOW", "ENTER", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+const CHOICES: [(&str, PinAction, Option<&'static [u8]>); CHOICE_LENGTH] = [
+    ("DELETE", PinAction::Delete, Some(theme::ICON_DELETE)),
+    ("SHOW", PinAction::Show, Some(theme::ICON_EYE)),
+    ("ENTER", PinAction::Enter, Some(theme::ICON_TICK)),
+    ("0", PinAction::Digit('0'), None),
+    ("1", PinAction::Digit('1'), None),
+    ("2", PinAction::Digit('2'), None),
+    ("3", PinAction::Digit('3'), None),
+    ("4", PinAction::Digit('4'), None),
+    ("5", PinAction::Digit('5'), None),
+    ("6", PinAction::Digit('6'), None),
+    ("7", PinAction::Digit('7'), None),
+    ("8", PinAction::Digit('8'), None),
+    ("9", PinAction::Digit('9'), None),
 ];
 
-struct ChoiceFactoryPIN<T>
-where
-    T: StringType,
-{
-    _phantom: PhantomData<T>,
-}
+struct ChoiceFactoryPIN;
 
-impl<T> ChoiceFactoryPIN<T>
-where
-    T: StringType,
-{
-    fn new() -> Self {
-        Self {
-            _phantom: PhantomData,
-        }
-    }
-}
+impl ChoiceFactory for ChoiceFactoryPIN {
+    type Action = PinAction;
 
-impl<T> ChoiceFactory<T> for ChoiceFactoryPIN<T>
-where
-    T: StringType,
-{
-    type Item = ChoiceItem<T>;
-
-    fn get(&self, choice_index: usize) -> ChoiceItem<T> {
-        let choice_str = CHOICES[choice_index];
+    fn get(&self, choice_index: usize) -> (ChoiceItem, Self::Action) {
+        let (choice_str, action, icon) = CHOICES[choice_index];
 
         let mut choice_item = ChoiceItem::new(choice_str, ButtonLayout::default_three_icons());
 
         // Action buttons have different middle button text
-        if [DELETE_INDEX, SHOW_INDEX, ENTER_INDEX].contains(&(choice_index)) {
+        if !matches!(action, PinAction::Digit(_)) {
             let confirm_btn = ButtonDetails::armed_text("CONFIRM");
             choice_item.set_middle_btn(Some(confirm_btn));
         }
 
         // Adding icons for appropriate items
-        match choice_index {
-            DELETE_INDEX => {
-                choice_item = choice_item.with_icon(Icon::new(theme::ICON_DELETE));
-            }
-            SHOW_INDEX => {
-                choice_item = choice_item.with_icon(Icon::new(theme::ICON_EYE));
-            }
-            ENTER_INDEX => {
-                choice_item = choice_item.with_icon(Icon::new(theme::ICON_TICK));
-            }
-            _ => {}
+        if let Some(icon) = icon {
+            choice_item = choice_item.with_icon(Icon::new(icon));
         }
 
-        choice_item
+        (choice_item, action)
     }
 
     fn count(&self) -> usize {
@@ -93,7 +84,7 @@ pub struct PinEntry<T>
 where
     T: StringType,
 {
-    choice_page: ChoicePage<ChoiceFactoryPIN<T>, T>,
+    choice_page: ChoicePage<ChoiceFactoryPIN, PinAction>,
     pin_line: Child<ChangingTextLine<String<MAX_PIN_LENGTH>>>,
     subprompt_line: Child<ChangingTextLine<T>>,
     prompt: T,
@@ -106,7 +97,7 @@ where
     T: StringType,
 {
     pub fn new(prompt: T, subprompt: T) -> Self {
-        let choices = ChoiceFactoryPIN::new();
+        let choices = ChoiceFactoryPIN;
 
         Self {
             // Starting at the digit 0
@@ -125,7 +116,7 @@ where
 
     fn append_new_digit(&mut self, ctx: &mut EventCtx, page_counter: usize) {
         let digit = CHOICES[page_counter];
-        self.textbox.append_slice(ctx, digit);
+        self.textbox.append_slice(ctx, digit.0);
     }
 
     fn delete_last_digit(&mut self, ctx: &mut EventCtx) {
@@ -207,37 +198,34 @@ where
             self.update(ctx)
         }
 
-        let msg = self.choice_page.event(ctx, event);
-        if let Some(ChoicePageMsg::Choice(page_counter)) = msg {
-            // Performing action under specific index or appending new digit
-            match page_counter {
-                DELETE_INDEX => {
-                    self.delete_last_digit(ctx);
-                    self.update(ctx);
-                }
-                SHOW_INDEX => {
-                    self.show_real_pin = true;
-                    self.update(ctx);
-                }
-                ENTER_INDEX => return Some(PinEntryMsg::Confirmed),
-                _ => {
-                    if !self.is_full() {
-                        self.append_new_digit(ctx, page_counter);
-                        // Choosing random digit to be shown next, but different
-                        // from the current choice.
-                        let new_page_counter = random::uniform_between_except(
-                            NUMBER_START_INDEX as u32,
-                            (CHOICE_LENGTH - 1) as u32,
-                            page_counter as u32,
-                        );
-                        self.choice_page
-                            .set_page_counter(ctx, new_page_counter as usize);
-                        self.update(ctx);
-                    }
-                }
+        match self.choice_page.event(ctx, event) {
+            Some(PinAction::Delete) => {
+                self.textbox.delete_last(ctx);
+                self.update(ctx);
+                None
             }
+            Some(PinAction::Show) => {
+                self.show_real_pin = true;
+                self.update(ctx);
+                None
+            }
+            Some(PinAction::Enter) => Some(PinEntryMsg::Confirmed),
+            Some(PinAction::Digit(ch)) if !self.is_full() => {
+                self.textbox.append(ctx, ch);
+                // Choosing random digit to be shown next, but different
+                // from the current choice.
+                let new_page_counter = random::uniform_between_except(
+                    NUMBER_START_INDEX as u32,
+                    (CHOICE_LENGTH - 1) as u32,
+                    self.choice_page.page_index() as u32,
+                );
+                self.choice_page
+                    .set_page_counter(ctx, new_page_counter as usize);
+                self.update(ctx);
+                None
+            }
+            _ => None,
         }
-        None
     }
 
     fn paint(&mut self) {
@@ -267,7 +255,7 @@ where
                     DELETE_INDEX => ButtonAction::Action("DELETE").string(),
                     SHOW_INDEX => ButtonAction::Action("SHOW").string(),
                     ENTER_INDEX => ButtonAction::Action("ENTER").string(),
-                    _ => ButtonAction::select_item(CHOICES[current_index]),
+                    _ => ButtonAction::select_item(CHOICES[current_index].0),
                 }
             }
         }

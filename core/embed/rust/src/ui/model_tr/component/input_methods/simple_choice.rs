@@ -1,17 +1,16 @@
 use crate::{
+    error::Error,
+    micropython::obj::Obj,
     strutil::StringType,
     ui::{
         component::{Component, Event, EventCtx},
         geometry::Rect,
+        layout::obj::ComponentMsgObj,
     },
 };
 
 use super::super::{ButtonLayout, ChoiceFactory, ChoiceItem, ChoicePage, ChoicePageMsg};
 use heapless::Vec;
-
-pub enum SimpleChoiceMsg {
-    ResultIndex(usize),
-}
 
 // So that there is only one implementation, and not multiple generic ones
 // as would be via `const N: usize` generics.
@@ -32,13 +31,13 @@ impl<T> ChoiceFactory<T> for ChoiceFactorySimple<T>
 where
     T: StringType,
 {
-    type Item = ChoiceItem<T>;
+    type Action = usize;
 
     fn count(&self) -> usize {
         self.choices.len()
     }
 
-    fn get(&self, choice_index: usize) -> ChoiceItem<T> {
+    fn get(&self, choice_index: usize) -> (ChoiceItem, Self::Action) {
         let text = &self.choices[choice_index];
         let mut choice_item = ChoiceItem::new(text, ButtonLayout::default_three_icons());
 
@@ -53,7 +52,7 @@ where
             }
         }
 
-        choice_item
+        (choice_item, choice_index)
     }
 }
 
@@ -109,23 +108,31 @@ impl<T> Component for SimpleChoice<T>
 where
     T: StringType,
 {
-    type Msg = SimpleChoiceMsg;
+    type Msg = usize;
 
     fn place(&mut self, bounds: Rect) -> Rect {
         self.choice_page.place(bounds)
     }
 
     fn event(&mut self, ctx: &mut EventCtx, event: Event) -> Option<Self::Msg> {
-        match self.choice_page.event(ctx, event) {
-            Some(ChoicePageMsg::Choice(page_counter)) => {
-                Some(SimpleChoiceMsg::ResultIndex(page_counter))
-            }
-            _ => None,
-        }
+        self.choice_page.event(ctx, event)
     }
 
     fn paint(&mut self) {
         self.choice_page.paint();
+    }
+}
+
+// XXX this would usually be in `layout.rs` to avoid micropython dependency,
+// but SimpleChoice already depends on micropython due to StrBuffer usage
+impl<const N: usize> ComponentMsgObj for SimpleChoice<N> {
+    fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
+        if self.return_index {
+            msg.try_into()
+        } else {
+            let text = self.choices[msg].as_ref();
+            text.try_into()
+        }
     }
 }
 

@@ -46,10 +46,9 @@ use super::{
     component::{
         AddressDetails, AddressDetailsMsg, ButtonActions, ButtonDetails, ButtonLayout, ButtonPage,
         CancelInfoConfirmMsg, CoinJoinProgress, Flow, FlowMsg, FlowPages, Frame, Homescreen,
-        HomescreenMsg, Lockscreen, NoBtnDialog, NumberInput, NumberInputMsg, Page, PassphraseEntry,
+        HomescreenMsg, Lockscreen, NoBtnDialog, NoBtnDialogMsg, NumberInput, Page, PassphraseEntry,
         PassphraseEntryMsg, PinEntry, PinEntryMsg, Progress, ScrollableContent, ScrollableFrame,
-        ShareWords, ShowMore, SimpleChoice, SimpleChoiceMsg, WelcomeScreen, WordlistEntry,
-        WordlistEntryMsg, WordlistType,
+        ShareWords, ShowMore, SimpleChoice, WelcomeScreen, WordlistEntry, WordlistType,
     },
     constant, theme,
 };
@@ -171,23 +170,7 @@ where
     T: StringType,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
-        match msg {
-            NumberInputMsg::Number(choice) => choice.try_into(),
-        }
-    }
-}
-
-impl<T> ComponentMsgObj for SimpleChoice<T>
-where
-    T: StringType,
-{
-    fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
-        match msg {
-            SimpleChoiceMsg::ResultIndex(index) => match self.return_index {
-                true => index.try_into(),
-                false => self.result_by_index(index).try_into(),
-            },
-        }
+        msg.try_into()
     }
 }
 
@@ -196,9 +179,7 @@ where
     T: StringType,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
-        match msg {
-            WordlistEntryMsg::WordIndex(index) => self.word_by_index(index).try_into(),
-        }
+        msg.try_into()
     }
 }
 

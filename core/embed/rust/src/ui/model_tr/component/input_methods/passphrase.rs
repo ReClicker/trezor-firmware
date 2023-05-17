@@ -11,7 +11,6 @@ use heapless::String;
 
 use super::super::{
     theme, ButtonDetails, ButtonLayout, ChangingTextLine, ChoiceFactory, ChoiceItem, ChoicePage,
-    ChoicePageMsg,
 };
 
 pub enum PassphraseEntryMsg {
@@ -45,16 +44,58 @@ const UPPERCASE_INDEX: usize = 4;
 const DIGITS_INDEX: usize = 5;
 const SPECIAL_INDEX: usize = 6;
 const SPACE_INDEX: usize = 7;
-const MENU: [&str; MENU_LENGTH] = [
-    "SHOW",
-    "CANCEL_OR_DELETE", // will be chosen dynamically
-    "ENTER",
-    "abc",
-    "ABC",
-    "123",
-    "#$!",
-    "SPACE",
+
+// Menu text, action, icon data, middle button with CONFIRM
+const MENU: [(&str, PassphraseAction, Option<&'static [u8]>, bool); MENU_LENGTH] = [
+    ("SHOW", PassphraseAction::Show, Some(theme::ICON_EYE), true),
+    ("", PassphraseAction::CancelOrDelete, None, true), // will be chosen dynamically
+    (
+        "ENTER",
+        PassphraseAction::Enter,
+        Some(theme::ICON_TICK),
+        true,
+    ),
+    (
+        "abc",
+        PassphraseAction::Category(ChoiceCategory::LowercaseLetter),
+        None,
+        false,
+    ),
+    (
+        "ABC",
+        PassphraseAction::Category(ChoiceCategory::UppercaseLetter),
+        None,
+        false,
+    ),
+    (
+        "123",
+        PassphraseAction::Category(ChoiceCategory::Digit),
+        None,
+        false,
+    ),
+    (
+        "#$!",
+        PassphraseAction::Category(ChoiceCategory::SpecialSymbol),
+        None,
+        false,
+    ),
+    (
+        "SPACE",
+        PassphraseAction::Character(' '),
+        Some(theme::ICON_SPACE),
+        false,
+    ),
 ];
+
+#[derive(Clone, Copy)]
+enum PassphraseAction {
+    Menu,
+    Show,
+    CancelOrDelete,
+    Enter,
+    Category(ChoiceCategory),
+    Character(char),
+}
 
 /// Get a character at a specified index for a specified category.
 fn get_char(current_category: &ChoiceCategory, index: usize) -> char {
@@ -120,68 +161,54 @@ where
     }
 
     /// MENU choices with accept and cancel hold-to-confirm side buttons.
-    fn get_menu_item(&self, choice_index: usize) -> ChoiceItem<T> {
+    fn get_menu_item(&self, choice_index: usize) -> (ChoiceItem, PassphraseAction) {
         // More options for CANCEL/DELETE button
-        let choice = if choice_index == CANCEL_DELETE_INDEX {
+        let (mut text, action, mut icon, show_confirm) = MENU[choice_index];
+        if matches!(action, PassphraseAction::CancelOrDelete) {
             if self.is_empty {
-                "CANCEL"
+                text = "CANCEL";
+                icon = Some(theme::ICON_CANCEL);
             } else {
-                "DELETE"
+                text = "DELETE";
+                icon = Some(theme::ICON_DELETE);
             }
-        } else {
-            MENU[choice_index]
-        };
+        }
 
-        let mut menu_item = ChoiceItem::new(choice, ButtonLayout::default_three_icons());
+        let mut menu_item = ChoiceItem::new(text, ButtonLayout::default_three_icons());
 
         // Action buttons have different middle button text
-        if [CANCEL_DELETE_INDEX, SHOW_INDEX, ENTER_INDEX].contains(&choice_index) {
+        if show_confirm {
             let confirm_btn = ButtonDetails::armed_text("CONFIRM");
             menu_item.set_middle_btn(Some(confirm_btn));
         }
 
-        // Including icons for some items.
-        match choice_index {
-            CANCEL_DELETE_INDEX => {
-                if self.is_empty {
-                    menu_item = menu_item.with_icon(Icon::new(theme::ICON_CANCEL));
-                } else {
-                    menu_item = menu_item.with_icon(Icon::new(theme::ICON_DELETE));
-                }
-            }
-            SHOW_INDEX => {
-                menu_item = menu_item.with_icon(Icon::new(theme::ICON_EYE));
-            }
-            ENTER_INDEX => {
-                menu_item = menu_item.with_icon(Icon::new(theme::ICON_TICK));
-            }
-            SPACE_INDEX => {
-                menu_item = menu_item.with_icon(Icon::new(theme::ICON_SPACE));
-            }
-            _ => {}
+        if let Some(icon) = icon {
+            menu_item = menu_item.with_icon(Icon::new(icon));
         }
-
-        menu_item
+        (menu_item, action)
     }
 
     /// Character choices with a BACK to MENU choice at the end (visible from
     /// start) to return back
-    fn get_character_item(&self, choice_index: usize) -> ChoiceItem<T> {
+    fn get_character_item(&self, choice_index: usize) -> (ChoiceItem, PassphraseAction) {
         if is_menu_choice(&self.current_category, choice_index) {
-            ChoiceItem::new("BACK", ButtonLayout::arrow_armed_arrow("RETURN"))
-                .with_icon(Icon::new(theme::ICON_ARROW_BACK_UP))
+            (
+                ChoiceItem::new("BACK", ButtonLayout::arrow_armed_arrow("RETURN"))
+                    .with_icon(Icon::new(theme::ICON_ARROW_BACK_UP)),
+                PassphraseAction::Menu,
+            )
         } else {
             let ch = get_char(&self.current_category, choice_index);
-            ChoiceItem::new(char_to_string::<1>(ch), ButtonLayout::default_three_icons())
+            (
+                ChoiceItem::new(char_to_string::<1>(ch), ButtonLayout::default_three_icons()),
+                PassphraseAction::Character(ch),
+            )
         }
     }
 }
 
-impl<T> ChoiceFactory<T> for ChoiceFactoryPassphrase<T>
-where
-    T: StringType,
-{
-    type Item = ChoiceItem<T>;
+impl ChoiceFactory for ChoiceFactoryPassphrase {
+    type Action = PassphraseAction;
 
     fn count(&self) -> usize {
         let length = get_category_length(&self.current_category);
@@ -191,8 +218,7 @@ where
             _ => length + 1,
         }
     }
-
-    fn get(&self, choice_index: usize) -> ChoiceItem<T> {
+    fn get(&self, choice_index: usize) -> (ChoiceItem, Self::Action) {
         match self.current_category {
             ChoiceCategory::Menu => self.get_menu_item(choice_index),
             _ => self.get_character_item(choice_index),
@@ -201,11 +227,8 @@ where
 }
 
 /// Component for entering a passphrase.
-pub struct PassphraseEntry<T>
-where
-    T: StringType,
-{
-    choice_page: ChoicePage<ChoiceFactoryPassphrase<T>, T>,
+pub struct PassphraseEntry {
+    choice_page: ChoicePage<ChoiceFactoryPassphrase, PassphraseAction>,
     passphrase_dots: Child<ChangingTextLine<String<MAX_PASSPHRASE_LENGTH>>>,
     show_plain_passphrase: bool,
     textbox: TextBox<MAX_PASSPHRASE_LENGTH>,
@@ -302,59 +325,47 @@ where
             self.update_passphrase_dots(ctx);
         }
 
-        if let Some(ChoicePageMsg::Choice(page_counter)) = self.choice_page.event(ctx, event) {
-            // Event handling based on MENU vs CATEGORY
-            if self.current_category == ChoiceCategory::Menu {
-                // Going to new category, applying some action or returning the result
-                match page_counter {
-                    CANCEL_DELETE_INDEX => {
-                        if self.is_empty() {
-                            return Some(PassphraseEntryMsg::Cancelled);
-                        } else {
-                            self.delete_last_digit(ctx);
-                            self.update_passphrase_dots(ctx);
-                            if self.is_empty() {
-                                // Allowing for DELETE/CANCEL change
-                                self.menu_position = CANCEL_DELETE_INDEX;
-                                self.show_menu_page(ctx);
-                            }
-                            ctx.request_paint();
-                        }
-                    }
-                    ENTER_INDEX => {
-                        return Some(PassphraseEntryMsg::Confirmed);
-                    }
-                    SHOW_INDEX => {
-                        self.show_plain_passphrase = true;
+        if let Some(action) = self.choice_page.event(ctx, event) {
+            match action {
+                PassphraseAction::CancelOrDelete => {
+                    if self.is_empty() {
+                        return Some(PassphraseEntryMsg::Cancelled);
+                    } else {
+                        self.delete_last_digit(ctx);
                         self.update_passphrase_dots(ctx);
-                        ctx.request_paint();
-                    }
-                    SPACE_INDEX => {
-                        if !self.is_full() {
-                            self.append_char(ctx, ' ');
-                            self.update_passphrase_dots(ctx);
-                            ctx.request_paint();
+                        if self.is_empty() {
+                            // Allowing for DELETE/CANCEL change
+                            self.menu_position = CANCEL_DELETE_INDEX;
+                            self.show_menu_page(ctx);
                         }
-                    }
-                    _ => {
-                        self.menu_position = page_counter;
-                        self.current_category = get_category_from_menu(page_counter);
-                        self.show_category_page(ctx);
                         ctx.request_paint();
                     }
                 }
-            } else {
-                // Coming back to MENU or adding new character
-                if is_menu_choice(&self.current_category, page_counter) {
-                    self.current_category = ChoiceCategory::Menu;
-                    self.show_menu_page(ctx);
-                    ctx.request_paint();
-                } else if !self.is_full() {
-                    let new_char = get_char(&self.current_category, page_counter);
-                    self.append_char(ctx, new_char);
+                PassphraseAction::Enter => {
+                    return Some(PassphraseEntryMsg::Confirmed);
+                }
+                PassphraseAction::Show => {
+                    self.show_plain_passphrase = true;
                     self.update_passphrase_dots(ctx);
                     ctx.request_paint();
                 }
+                PassphraseAction::Category(category) => {
+                    self.menu_position = self.choice_page.page_index();
+                    self.current_category = category;
+                    self.show_category_page(ctx);
+                    ctx.request_paint();
+                }
+                PassphraseAction::Menu => {
+                    self.current_category = ChoiceCategory::Menu;
+                    self.show_menu_page(ctx);
+                    ctx.request_paint();
+                }
+                PassphraseAction::Character(ch) if !self.is_full() => {
+                    self.append_char(ctx, ch);
+                    self.update_passphrase_dots(ctx);
+                    ctx.request_paint();
+                }
+                _ => {}
             }
         }
 
@@ -377,10 +388,10 @@ impl ChoiceCategory {
     fn string(&self) -> String<25> {
         match self {
             ChoiceCategory::Menu => "MENU".into(),
-            ChoiceCategory::LowercaseLetter => MENU[LOWERCASE_INDEX].into(),
-            ChoiceCategory::UppercaseLetter => MENU[UPPERCASE_INDEX].into(),
-            ChoiceCategory::Digit => MENU[DIGITS_INDEX].into(),
-            ChoiceCategory::SpecialSymbol => MENU[SPECIAL_INDEX].into(),
+            ChoiceCategory::LowercaseLetter => MENU[LOWERCASE_INDEX].0.into(),
+            ChoiceCategory::UppercaseLetter => MENU[UPPERCASE_INDEX].0.into(),
+            ChoiceCategory::Digit => MENU[DIGITS_INDEX].0.into(),
+            ChoiceCategory::SpecialSymbol => MENU[SPECIAL_INDEX].0.into(),
         }
     }
 }
@@ -397,7 +408,7 @@ where
             ButtonPos::Middle => {
                 let current_index = self.choice_page.page_index();
                 match &self.current_category {
-                    ChoiceCategory::Menu => ButtonAction::select_item(MENU[current_index]),
+                    ChoiceCategory::Menu => ButtonAction::select_item(MENU[current_index].0),
                     _ => {
                         // There is "MENU" option at the end
                         match self.choice_page.has_next_choice() {

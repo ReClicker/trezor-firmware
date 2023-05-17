@@ -17,7 +17,7 @@ pub use button::{
 pub use button_controller::{ButtonController, ButtonControllerMsg};
 pub use hold_to_confirm::{HoldToConfirm, HoldToConfirmMsg};
 pub use input_methods::{
-    choice::{Choice, ChoiceFactory, ChoicePage, ChoicePageMsg},
+    choice::{Choice, ChoiceFactory, ChoicePage},
     choice_item::ChoiceItem,
 };
 pub use loader::{Loader, LoaderMsg, LoaderStyle, LoaderStyleSheet};
@@ -51,11 +51,11 @@ pub use flow_pages::{FlowPages, Page};
 pub use frame::{Frame, ScrollableContent, ScrollableFrame};
 pub use homescreen::{Homescreen, HomescreenMsg, Lockscreen};
 pub use input_methods::{
-    number_input::{NumberInput, NumberInputMsg},
+    number_input::NumberInput,
     passphrase::{PassphraseEntry, PassphraseEntryMsg},
     pin::{PinEntry, PinEntryMsg},
-    simple_choice::{SimpleChoice, SimpleChoiceMsg},
-    wordlist::{WordlistEntry, WordlistEntryMsg, WordlistType},
+    simple_choice::SimpleChoice,
+    wordlist::{WordlistEntry, WordlistType},
 };
 pub use no_btn_dialog::NoBtnDialog;
 pub use page::ButtonPage;

@@ -6,12 +6,8 @@ use crate::{
     },
 };
 
-use super::super::{ButtonLayout, ChoiceFactory, ChoiceItem, ChoicePage, ChoicePageMsg};
+use super::super::{ButtonLayout, ChoiceFactory, ChoiceItem, ChoicePage};
 use heapless::String;
-
-pub enum NumberInputMsg {
-    Number(u32),
-}
 
 struct ChoiceFactoryNumberInput {
     min: u32,
@@ -24,41 +20,30 @@ impl ChoiceFactoryNumberInput {
     }
 }
 
-impl<T> ChoiceFactory<T> for ChoiceFactoryNumberInput
-where
-    T: StringType,
-{
-    type Item = ChoiceItem<T>;
+impl ChoiceFactory for ChoiceFactoryNumberInput {
+    type Action = u32;
 
     fn count(&self) -> usize {
         (self.max - self.min + 1) as usize
     }
 
-    fn get(&self, choice_index: usize) -> ChoiceItem<T> {
+    fn get(&self, choice_index: usize) -> (ChoiceItem, Self::Action) {
         let num = self.min + choice_index as u32;
         let text: String<10> = String::from(num);
         let mut choice_item = ChoiceItem::new(text, ButtonLayout::default_three_icons());
-
-        // Disabling prev/next buttons for the first/last choice.
-        // (could be done to the same button if there is only one)
-        if choice_index == 0 {
-            choice_item.set_left_btn(None);
-        }
+        if choice_index == 0 {}
         if choice_index == <ChoiceFactoryNumberInput as ChoiceFactory<T>>::count(self) - 1 {
             choice_item.set_right_btn(None);
         }
 
-        choice_item
+        (choice_item, num)
     }
 }
 
 /// Simple wrapper around `ChoicePage` that allows for
 /// inputting a list of values and receiving the chosen one.
-pub struct NumberInput<T>
-where
-    T: StringType,
-{
-    choice_page: ChoicePage<ChoiceFactoryNumberInput, T>,
+pub struct NumberInput {
+    choice_page: ChoicePage<ChoiceFactoryNumberInput, u32>,
     min: u32,
 }
 
@@ -76,25 +61,15 @@ where
     }
 }
 
-impl<T> Component for NumberInput<T>
-where
-    T: StringType,
-{
-    type Msg = NumberInputMsg;
+impl Component for NumberInput {
+    type Msg = u32;
 
     fn place(&mut self, bounds: Rect) -> Rect {
         self.choice_page.place(bounds)
     }
 
     fn event(&mut self, ctx: &mut EventCtx, event: Event) -> Option<Self::Msg> {
-        let msg = self.choice_page.event(ctx, event);
-        match msg {
-            Some(ChoicePageMsg::Choice(page_counter)) => {
-                let result_num = self.min + page_counter as u32;
-                Some(NumberInputMsg::Number(result_num))
-            }
-            _ => None,
-        }
+        self.choice_page.event(ctx, event)
     }
 
     fn paint(&mut self) {
