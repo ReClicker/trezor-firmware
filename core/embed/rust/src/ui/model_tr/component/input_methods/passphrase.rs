@@ -9,8 +9,8 @@ use crate::{
 };
 
 use super::super::{
-    theme, ButtonDetails, ButtonLayout, ChangingTextLine, ChoiceFactory, ChoiceItem, ChoicePage,
-    ChoicePageMsg,
+    theme, trace::ButtonTrace, ButtonDetails, ButtonLayout, ChangingTextLine, ChoiceFactory,
+    ChoiceItem, ChoicePage, ChoicePageMsg,
 };
 use core::marker::PhantomData;
 use heapless::String;
@@ -397,7 +397,7 @@ impl ChoiceCategory {
 }
 
 #[cfg(feature = "ui_debug")]
-impl<T> crate::trace::Trace for PassphraseEntry<T>
+impl<T> ButtonTrace for PassphraseEntry<T>
 where
     T: StringType,
 {
@@ -433,7 +433,13 @@ where
             }
         }
     }
+}
 
+#[cfg(feature = "ui_debug")]
+impl<T> crate::trace::Trace for PassphraseEntry<T>
+where
+    T: StringType,
+{
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("PassphraseKeyboard");
         t.string("passphrase", self.textbox.content());

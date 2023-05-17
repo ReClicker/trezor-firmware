@@ -6,7 +6,9 @@ use crate::{
     },
 };
 
-use super::{theme, ButtonController, ButtonControllerMsg, ButtonLayout, ButtonPos};
+use super::{
+    theme, trace::ButtonTrace, ButtonController, ButtonControllerMsg, ButtonLayout, ButtonPos,
+};
 
 pub enum CancelInfoConfirmMsg {
     Cancelled,
@@ -84,7 +86,7 @@ use super::ButtonAction;
 use heapless::String;
 
 #[cfg(feature = "ui_debug")]
-impl<T, U> crate::trace::Trace for ShowMore<T, U>
+impl<T, U> ButtonTrace for ShowMore<T, U>
 where
     T: crate::trace::Trace + Component,
     U: StringType,
@@ -96,7 +98,14 @@ where
             ButtonPos::Right => ButtonAction::Action("INFO").string(),
         }
     }
+}
 
+#[cfg(feature = "ui_debug")]
+impl<T, U> crate::trace::Trace for ShowMore<T, U>
+where
+    T: crate::trace::Trace + Component,
+    U: StringType,
+{
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ShowMore");
         self.report_btn_actions(t);

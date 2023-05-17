@@ -7,8 +7,8 @@ use crate::{
 };
 
 use super::{
-    scrollbar::SCROLLBAR_SPACE, theme, title::Title, ButtonAction, ButtonController,
-    ButtonControllerMsg, ButtonLayout, ButtonPos, FlowPages, Page, ScrollBar,
+    scrollbar::SCROLLBAR_SPACE, theme, title::Title, trace::ButtonTrace, ButtonAction,
+    ButtonController, ButtonControllerMsg, ButtonLayout, ButtonPos, FlowPages, Page, ScrollBar,
 };
 
 /// To be returned directly from Flow.
@@ -295,7 +295,7 @@ where
 use heapless::String;
 
 #[cfg(feature = "ui_debug")]
-impl<F, const M: usize, T> crate::trace::Trace for Flow<F, M, T>
+impl<F, const M: usize, T> ButtonTrace for Flow<F, M, T>
 where
     F: Fn(usize) -> Page<M, T>,
     T: StringType,
@@ -316,7 +316,14 @@ where
             }
         }
     }
+}
 
+#[cfg(feature = "ui_debug")]
+impl<F, const M: usize, T> crate::trace::Trace for Flow<F, M, T>
+where
+    F: Fn(usize) -> Page<M, T>,
+    T: StringType,
+{
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("Flow");
         t.int("flow_page", self.page_counter as i64);

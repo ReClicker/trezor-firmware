@@ -9,8 +9,8 @@ use crate::{
 };
 
 use super::super::{
-    theme, ButtonDetails, ButtonLayout, ChangingTextLine, ChoiceFactory, ChoiceItem, ChoicePage,
-    ChoicePageMsg,
+    theme, trace::ButtonTrace, ButtonDetails, ButtonLayout, ChangingTextLine, ChoiceFactory,
+    ChoiceItem, ChoicePage, ChoicePageMsg,
 };
 use core::marker::PhantomData;
 use heapless::String;
@@ -253,7 +253,7 @@ where
 use super::super::{ButtonAction, ButtonPos};
 
 #[cfg(feature = "ui_debug")]
-impl<T> crate::trace::Trace for PinEntry<T>
+impl<T> ButtonTrace for PinEntry<T>
 where
     T: StringType,
 {
@@ -272,7 +272,13 @@ where
             }
         }
     }
+}
 
+#[cfg(feature = "ui_debug")]
+impl<T> crate::trace::Trace for PinEntry<T>
+where
+    T: StringType,
+{
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("PinKeyboard");
         t.string("prompt", self.prompt.as_ref());

@@ -7,7 +7,9 @@ mod loader;
 mod result;
 mod welcome_screen;
 
-use super::theme;
+#[cfg(feature = "ui_debug")]
+use super::trace;
+use super::{constant, theme};
 pub use button::{
     Button, ButtonAction, ButtonActions, ButtonContent, ButtonDetails, ButtonLayout, ButtonMsg,
     ButtonPos, ButtonStyle, ButtonStyleSheet,

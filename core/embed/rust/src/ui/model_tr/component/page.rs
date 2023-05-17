@@ -8,8 +8,8 @@ use crate::{
 };
 
 use super::{
-    super::constant, theme, ButtonController, ButtonControllerMsg, ButtonDetails, ButtonLayout,
-    ButtonPos,
+    constant, frame::ScrollableContent, theme, trace::ButtonTrace, ButtonController,
+    ButtonControllerMsg, ButtonDetails, ButtonLayout, ButtonPos,
 };
 
 pub struct ButtonPage<T, U>
@@ -229,14 +229,13 @@ where
 
 // DEBUG-ONLY SECTION BELOW
 
-use super::frame::ScrollableContent;
 #[cfg(feature = "ui_debug")]
 use super::ButtonAction;
 #[cfg(feature = "ui_debug")]
 use heapless::String;
 
 #[cfg(feature = "ui_debug")]
-impl<T, U> crate::trace::Trace for ButtonPage<T, U>
+impl<T, U> ButtonTrace for ButtonPage<T, U>
 where
     T: crate::trace::Trace + Paginate + Component,
     U: StringType,
@@ -264,7 +263,14 @@ where
             ButtonPos::Middle => ButtonAction::empty(),
         }
     }
+}
 
+#[cfg(feature = "ui_debug")]
+impl<T, U> crate::trace::Trace for ButtonPage<T, U>
+where
+    T: crate::trace::Trace + Paginate + Component,
+    U: StringType,
+{
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ButtonPage");
         t.int("active_page", self.active_page as i64);

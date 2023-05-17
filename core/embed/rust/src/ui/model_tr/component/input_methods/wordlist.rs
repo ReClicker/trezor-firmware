@@ -10,7 +10,8 @@ use crate::{
 };
 
 use super::super::{
-    theme, ButtonLayout, ChangingTextLine, ChoiceFactory, ChoiceItem, ChoicePage, ChoicePageMsg,
+    theme, trace::ButtonTrace, ButtonLayout, ChangingTextLine, ChoiceFactory, ChoiceItem,
+    ChoicePage, ChoicePageMsg,
 };
 use heapless::{String, Vec};
 
@@ -273,7 +274,7 @@ use super::super::{ButtonAction, ButtonPos};
 use crate::ui::util;
 
 #[cfg(feature = "ui_debug")]
-impl<T> crate::trace::Trace for WordlistEntry<T>
+impl<T> ButtonTrace for WordlistEntry<T>
 where
     T: StringType,
 {
@@ -297,7 +298,13 @@ where
             }
         }
     }
+}
 
+#[cfg(feature = "ui_debug")]
+impl<T> crate::trace::Trace for WordlistEntry<T>
+where
+    T: StringType,
+{
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         match self.wordlist_type {
             WordlistType::Bip39 => t.component("Bip39Entry"),
