@@ -1,6 +1,6 @@
 #[cfg(feature = "ui_debug")]
-use crate::trace::Trace;
 use crate::{
+    maybe_trace::MaybeTrace,
     strutil::StringType,
     ui::{
         component::{Child, Component, Event, EventCtx, Pad},
@@ -51,10 +51,7 @@ pub trait ChoiceFactory<T>
 where
     T: StringType,
 {
-    #[cfg(feature = "ui_debug")]
-    type Item: Choice<T> + Trace;
-    #[cfg(not(feature = "ui_debug"))]
-    type Item: Choice<T>;
+    type Item: Choice<T> + MaybeTrace;
     fn count(&self) -> usize;
     fn get(&self, index: usize) -> Self::Item;
 }
