@@ -728,6 +728,7 @@ async def confirm_blob(
     title: str,
     data: bytes | str,
     description: str | None = None,
+    verb: str = "CONFIRM",
     hold: bool = False,
     br_code: ButtonRequestType = BR_TYPE_OTHER,
     ask_pagination: bool = False,
@@ -741,7 +742,7 @@ async def confirm_blob(
             data=data,
             extra=None,
             hold=hold,
-            verb="CONFIRM",
+            verb=verb,
         )
     )
 
@@ -923,7 +924,10 @@ async def confirm_total(
             result = await ctx.wait(
                 RustLayout(
                     trezorui2.show_spending_details(
-                        account=account_label, fee_rate=fee_rate_amount
+                        title=None,
+                        account=account_label,
+                        fee_rate=fee_rate_amount,
+                        fee_rate_title=None,
                     )
                 )
             )
@@ -978,12 +982,13 @@ async def confirm_metadata(
     )
 
 
-async def confirm_replacement(ctx: GenericContext, description: str, txid: str) -> None:
+async def confirm_replacement(ctx: GenericContext, title: str, txid: str) -> None:
     await confirm_blob(
         ctx,
-        title=description.upper(),
+        title=title.upper(),
         data=txid,
-        description="Confirm transaction ID:",
+        description="Transaction ID:",
+        verb="CONTINUE",
         br_type="confirm_replacement",
         br_code=ButtonRequestType.SignTx,
     )
@@ -996,45 +1001,93 @@ async def confirm_modify_output(
     amount_change: str,
     amount_new: str,
 ) -> None:
-    await raise_if_not_confirmed(
-        interact(
-            ctx,
+    send_button_request = True
+    while True:
+        if send_button_request:
+            await button_request(
+                ctx,
+                "modify_output",
+                ButtonRequestType.ConfirmOutput,
+            )
+        await raise_if_not_confirmed(
+            ctx.wait(
+                RustLayout(
+                    trezorui2.confirm_blob(
+                        title="MODIFY AMOUNT",
+                        data=address,
+                        verb="CONTINUE",
+                        verb_cancel=None,
+                        description="Address:",
+                        extra=None,
+                    )
+                )
+            )
+        )
+
+        if send_button_request:
+            send_button_request = False
+            await button_request(
+                ctx,
+                "modify_output",
+                ButtonRequestType.ConfirmOutput,
+            )
+        result = await ctx.wait(
             RustLayout(
                 trezorui2.confirm_modify_output(
-                    address=address,
                     sign=sign,
                     amount_change=amount_change,
                     amount_new=amount_new,
                 )
             ),
-            "modify_output",
-            ButtonRequestType.ConfirmOutput,
         )
-    )
+
+        if result is CONFIRMED:
+            break
 
 
 async def confirm_modify_fee(
     ctx: GenericContext,
+    title: str,
     sign: int,
     user_fee_change: str,
     total_fee_new: str,
     fee_rate_amount: str | None = None,
 ) -> None:
-    await raise_if_not_confirmed(
-        interact(
-            ctx,
-            RustLayout(
-                trezorui2.confirm_modify_fee(
-                    sign=sign,
-                    user_fee_change=user_fee_change,
-                    total_fee_new=total_fee_new,
-                    fee_rate_amount=fee_rate_amount,
-                )
-            ),
-            "modify_fee",
-            ButtonRequestType.SignTx,
+    layout = RustLayout(
+        trezorui2.confirm_modify_fee(
+            title=title.upper(),
+            sign=sign,
+            user_fee_change=user_fee_change,
+            total_fee_new=total_fee_new,
         )
     )
+    await button_request(
+        ctx,
+        "modify_fee",
+        ButtonRequestType.SignTx,
+    )
+
+    while True:
+        result = await ctx.wait(layout)
+
+        if result is CONFIRMED:
+            return
+        elif result is INFO:
+            result = await ctx.wait(
+                RustLayout(
+                    trezorui2.show_spending_details(
+                        account=None,
+                        title="FEE INFORMATION",
+                        fee_rate=fee_rate_amount,
+                        fee_rate_title="New fee rate:",
+                    )
+                )
+            )
+            assert result is CANCELLED
+            layout.request_complete_repaint()
+            continue
+
+        raise ActionCancelled
 
 
 async def confirm_coinjoin(
