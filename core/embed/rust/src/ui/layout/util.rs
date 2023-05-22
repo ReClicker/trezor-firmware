@@ -8,6 +8,7 @@ use crate::{
         obj::Obj,
         util::try_or_raise,
     },
+    storage::{get_avatar, get_avatar_len},
     ui::{
         component::text::{
             paragraphs::{Paragraph, ParagraphSource, ParagraphStrType},
@@ -260,4 +261,17 @@ pub extern "C" fn upy_jpeg_test(data: Obj) -> Obj {
     };
 
     unsafe { try_or_raise(block) }
+}
+
+pub fn get_user_custom_image() -> Result<Gc<[u8]>, &'static str> {
+    if let Ok(len) = get_avatar_len() {
+        let result = Gc::<[u8]>::new_slice(len);
+        if let Ok(mut buffer) = result {
+            let buf: &mut [u8] = unsafe { Gc::<[u8]>::as_mut(&mut buffer) };
+            if get_avatar(buf).is_ok() {
+                return Ok(buffer);
+            }
+        }
+    };
+    Err("Could not load avatar.")
 }

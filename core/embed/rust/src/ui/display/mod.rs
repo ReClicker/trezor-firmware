@@ -911,9 +911,12 @@ pub fn fill_background_for_text(
         Alignment::End => baseline.x - width,
     };
     let left_bottom_point = Point::new(baseline_x, baseline.y);
-    let rect =
+    let mut rect =
         Rect::from_bottom_left_and_size(left_bottom_point, Offset::new(width, font.text_height()))
             .expand(pixel_margin);
+    // There is bigger margin on the top (caused by text-height vs line-height),
+    // let's decrease the height by one pixel
+    rect = rect.split_top(1).1;
     rect_fill(rect, color);
 }
 

@@ -1,8 +1,6 @@
 mod render;
 
 use crate::{
-    micropython::gc::Gc,
-    storage::{get_avatar, get_avatar_len},
     time::{Duration, Instant},
     trezorhal::usb::usb_configured,
     ui::{
@@ -10,6 +8,7 @@ use crate::{
         display::{self, tjpgd::jpeg_info, toif::Icon, Color, Font},
         event::{TouchEvent, USBEvent},
         geometry::{Offset, Point, Rect},
+        layout::util::get_user_custom_image,
         model_tt::{constant, theme::IMAGE_HOMESCREEN},
     },
 };
@@ -205,7 +204,7 @@ where
 
             let notification = self.get_notification();
 
-            let res = get_image();
+            let res = get_user_custom_image();
             let mut show_default = true;
 
             if let Ok(data) = res {
@@ -323,7 +322,7 @@ where
             },
         ];
 
-        let res = get_image();
+        let res = get_user_custom_image();
         let mut show_default = true;
 
         if let Ok(data) = res {
@@ -350,19 +349,6 @@ where
             homescreen_blurred(&mut hs_img, &texts);
         }
     }
-}
-
-fn get_image() -> Result<Gc<[u8]>, ()> {
-    if let Ok(len) = get_avatar_len() {
-        let result = Gc::<[u8]>::new_slice(len);
-        if let Ok(mut buffer) = result {
-            let buf = unsafe { Gc::<[u8]>::as_mut(&mut buffer) };
-            if get_avatar(buf).is_ok() {
-                return Ok(buffer);
-            }
-        }
-    };
-    Err(())
 }
 
 fn is_image_jpeg(buffer: &[u8]) -> bool {

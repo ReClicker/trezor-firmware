@@ -25,7 +25,7 @@ use super::Color;
 
 const TOIF_HEADER_LENGTH: usize = 12;
 
-pub fn icon(icon: &Icon, center: Point, fg_color: Color, bg_color: Color) {
+pub fn render_icon(icon: &Icon, center: Point, fg_color: Color, bg_color: Color) {
     render_toif(&icon.toif, center, fg_color, bg_color);
 }
 
@@ -215,6 +215,13 @@ impl<'i> Toif<'i> {
     ) -> UzlibContext {
         UzlibContext::new(self.zdata(), window)
     }
+
+    /// Display the data with baseline Point, aligned according to the
+    /// `alignment` argument.
+    pub fn draw(&self, baseline: Point, alignment: Alignment2D, fg_color: Color, bg_color: Color) {
+        let r = Rect::snap(baseline, self.size(), alignment);
+        render_toif(self, r.center(), fg_color, bg_color);
+    }
 }
 
 #[derive(PartialEq, Eq, Clone, Copy)]
@@ -236,6 +243,6 @@ impl Icon {
     /// `alignment` argument.
     pub fn draw(&self, baseline: Point, alignment: Alignment2D, fg_color: Color, bg_color: Color) {
         let r = Rect::snap(baseline, self.toif.size(), alignment);
-        icon(self, r.center(), fg_color, bg_color);
+        render_icon(self, r.center(), fg_color, bg_color);
     }
 }

@@ -1175,7 +1175,7 @@ class InputFlowBip39RecoveryDryRun(InputFlowBase):
     def input_flow_tr(self) -> GeneratorType:
         yield
         assert "check the recovery seed" in self.layout().text_content()
-        self.debug.press_right()
+        self.debug.press_yes()
 
         yield
         assert "select the number of words" in self.layout().text_content()
@@ -1195,17 +1195,16 @@ class InputFlowBip39RecoveryDryRun(InputFlowBase):
         self.debug.press_yes()
 
         yield
-        self.debug.press_right()
+        self.debug.press_yes()
         yield
         for index, word in enumerate(self.mnemonic):
             assert "WORD" in self.layout().title()
             assert str(index + 1) in self.layout().title()
             self.debug.input(word)
 
+        yield
         self.debug.press_right()
-        yield
         self.debug.press_yes()
-        yield
 
 
 class InputFlowBip39RecoveryDryRunInvalid(InputFlowBase):

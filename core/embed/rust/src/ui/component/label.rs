@@ -1,6 +1,6 @@
 use crate::ui::{
     component::{Component, Event, EventCtx, Never},
-    display::Font,
+    display::{fill_background_for_text, Font},
     geometry::{Alignment, Insets, Offset, Point, Rect},
 };
 
@@ -10,6 +10,9 @@ pub struct Label<T> {
     text: T,
     layout: TextLayout,
     vertical: Alignment,
+    /// When defined, background around the text will
+    /// be filled with BG color.
+    fill_background_pixel_margin: Option<i16>,
 }
 
 impl<T> Label<T>
@@ -21,6 +24,7 @@ where
             text,
             layout: TextLayout::new(style).with_align(align),
             vertical: Alignment::Start,
+            fill_background_pixel_margin: None,
         }
     }
 
@@ -38,6 +42,11 @@ where
 
     pub fn vertically_aligned(mut self, align: Alignment) -> Self {
         self.vertical = align;
+        self
+    }
+
+    pub fn with_filled_background(mut self, pixel_margin: i16) -> Self {
+        self.fill_background_pixel_margin = Some(pixel_margin);
         self
     }
 
@@ -102,6 +111,24 @@ where
     }
 
     fn paint(&mut self) {
+        // Fill background if needed.
+        if let Some(pixel_margin) = self.fill_background_pixel_margin {
+            let initial_cursor = self.layout.initial_cursor();
+            let available_width = self.layout.bounds.width();
+            let baseline = match self.alignment() {
+                Alignment::Start => initial_cursor,
+                Alignment::Center => initial_cursor + Offset::x(available_width / 2),
+                Alignment::End => initial_cursor + Offset::x(available_width),
+            };
+            fill_background_for_text(
+                baseline,
+                self.text.as_ref(),
+                self.layout.style.text_font,
+                self.layout.style.background_color,
+                self.alignment(),
+                pixel_margin,
+            );
+        }
         self.layout.render_text(self.text.as_ref());
     }
 

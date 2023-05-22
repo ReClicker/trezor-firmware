@@ -1,17 +1,12 @@
 use crate::{
-    micropython::gc::Gc,
-    storage::{get_avatar, get_avatar_len},
     strutil::StringType,
     trezorhal::usb::usb_configured,
     ui::{
-        component::{Child, Component, Event, EventCtx, Pad},
-        display::{
-            fill_background_for_text, rect_fill,
-            toif::{render_toif, Toif},
-            Font, Icon,
-        },
+        component::{Child, Component, Event, EventCtx, Label},
+        display::{rect_fill, toif::Toif, Font, Icon},
         event::USBEvent,
-        geometry::{self, Alignment, Offset, Point, Rect},
+        geometry::{self, Offset, Point, Rect},
+        layout::util::get_user_custom_image,
     },
 };
 
@@ -22,8 +17,10 @@ use super::{
 
 const AREA: Rect = constant::screen();
 const TOP_CENTER: Point = AREA.top_center();
-const LABEL_Y: i16 = constant::HEIGHT - 5;
-const LOCKED_INSTRUCTION_Y: i16 = 34;
+const LABEL_Y: i16 = constant::HEIGHT - 15;
+const LABEL_AREA: Rect = AREA.split_top(LABEL_Y).1;
+const LOCKED_INSTRUCTION_Y: i16 = 27;
+const LOCKED_INSTRUCTION_AREA: Rect = AREA.split_top(LOCKED_INSTRUCTION_Y).1;
 const LOGO_ICON_TOP_MARGIN: i16 = 12;
 const LOCK_ICON_TOP_MARGIN: i16 = 12;
 const NOTIFICATION_HEIGHT: i16 = 12;
@@ -32,9 +29,8 @@ pub struct Homescreen<T>
 where
     T: StringType,
 {
-    label: T,
+    label: Child<Label<T>>,
     notification: Option<(T, u8)>,
-    pad: Pad,
     /// Used for HTC functionality to lock device from homescreen
     invisible_buttons: Child<ButtonController<T>>,
 }
@@ -50,49 +46,56 @@ where
     pub fn new(label: T, notification: Option<(T, u8)>) -> Self {
         let invisible_btn_layout = ButtonLayout::htc_none_htc("".into(), "".into());
         Self {
-            label,
+            label: Child::new(Label::centered(label, theme::TEXT_NORMAL).with_filled_background(3)),
             notification,
-            pad: Pad::with_background(theme::BG),
             invisible_buttons: Child::new(ButtonController::new(invisible_btn_layout)),
         }
     }
 
-    fn paint_notification(&self) {
-        // Filling the background to be well visible even on homescreen image
-        let baseline = TOP_CENTER + Offset::y(Font::MONO.line_height());
-        if !usb_configured() {
-            rect_fill(AREA.split_top(NOTIFICATION_HEIGHT).0, theme::BG);
-            // TODO: fill warning icons here as well?
-            display_center(baseline, &"NO USB CONNECTION", Font::MONO);
-        } else if let Some((notification, _level)) = &self.notification {
-            rect_fill(AREA.split_top(NOTIFICATION_HEIGHT).0, theme::BG);
-            display_center(baseline, &notification.as_ref(), Font::MONO);
-            // TODO: what if the notification text is so long it collides with icons?
-            let warning_icon = Icon::new(theme::ICON_WARNING);
-            warning_icon.draw(AREA.top_left(), geometry::TOP_LEFT, theme::FG, theme::BG);
-            // Needs x+1 Offset to compensate for empty right column (icon needs to be
-            // even-wide)
-            warning_icon.draw(
-                AREA.top_right() + Offset::x(1),
-                geometry::TOP_RIGHT,
+    fn paint_homescreen_image(&self) {
+        if let Ok(user_custom_image) = get_user_custom_image() {
+            let toif_data = unwrap!(Toif::new(user_custom_image.as_ref()));
+            toif_data.draw(TOP_CENTER, geometry::TOP_CENTER, theme::FG, theme::BG);
+        } else {
+            Icon::new(theme::ICON_LOGO).draw(
+                TOP_CENTER + Offset::y(LOGO_ICON_TOP_MARGIN),
+                geometry::TOP_CENTER,
                 theme::FG,
                 theme::BG,
             );
         }
     }
 
-    fn paint_label(&self) {
-        let label = self.label.as_ref();
-        let baseline = TOP_CENTER + Offset::y(LABEL_Y);
-        fill_background_for_text(
-            baseline,
-            label,
-            Font::NORMAL,
+    fn paint_notification(&self) {
+        let baseline = TOP_CENTER + Offset::y(Font::MONO.line_height());
+        if !usb_configured() {
+            self.fill_notification_background();
+            // TODO: fill warning icons here as well?
+            display_center(baseline, &"NO USB CONNECTION", Font::MONO);
+        } else if let Some((notification, _level)) = &self.notification {
+            self.fill_notification_background();
+            // TODO: what if the notification text is so long it collides with icons?
+            self.paint_warning_icons_in_top_corners();
+            display_center(baseline, &notification.as_ref(), Font::MONO);
+        }
+    }
+
+    /// So that notification is well visible even on homescreen image
+    fn fill_notification_background(&self) {
+        rect_fill(AREA.split_top(NOTIFICATION_HEIGHT).0, theme::BG);
+    }
+
+    fn paint_warning_icons_in_top_corners(&self) {
+        let warning_icon = Icon::new(theme::ICON_WARNING);
+        warning_icon.draw(AREA.top_left(), geometry::TOP_LEFT, theme::FG, theme::BG);
+        // Needs x+1 Offset to compensate for empty right column (icon needs to be
+        // even-wide)
+        warning_icon.draw(
+            AREA.top_right() + Offset::x(1),
+            geometry::TOP_RIGHT,
+            theme::FG,
             theme::BG,
-            Alignment::Center,
-            3,
         );
-        display_center(baseline, &label, Font::NORMAL);
     }
 
     fn event_usb(&mut self, ctx: &mut EventCtx, event: Event) {
@@ -109,7 +112,7 @@ where
     type Msg = HomescreenMsg;
 
     fn place(&mut self, bounds: Rect) -> Rect {
-        self.pad.place(AREA);
+        self.label.place(LABEL_AREA);
         bounds
     }
 
@@ -123,55 +126,20 @@ where
     }
 
     fn paint(&mut self) {
-        self.pad.paint();
         // Painting the homescreen image first, as the notification and label
         // should be "on top of it"
-        if let Ok(user_custom_image) = get_user_custom_image() {
-            // TODO: how to make it better? I did not want to introduce lifetime to
-            // `Icon`, it would then need to be specified in a lot of places.
-            let toif_data = unwrap!(Toif::new(user_custom_image.as_ref()));
-            let r = Rect::snap(TOP_CENTER, toif_data.size(), geometry::TOP_CENTER);
-            render_toif(&toif_data, r.center(), theme::FG, theme::BG);
-        } else {
-            Icon::new(theme::ICON_LOGO).draw(
-                TOP_CENTER + Offset::y(LOGO_ICON_TOP_MARGIN),
-                geometry::TOP_CENTER,
-                theme::FG,
-                theme::BG,
-            );
-        }
-
+        self.paint_homescreen_image();
         self.paint_notification();
-        self.paint_label();
+        self.label.paint();
     }
-
-    #[cfg(feature = "ui_bounds")]
-    fn bounds(&self, sink: &mut dyn FnMut(Rect)) {
-        sink(self.pad.area);
-    }
-}
-
-// TODO: this is copy-paste from `model_tt/component/homescreen/mod.rs`,
-// probably could be moved to some common place (maybe storage)
-fn get_user_custom_image() -> Result<Gc<[u8]>, ()> {
-    if let Ok(len) = get_avatar_len() {
-        let result = Gc::<[u8]>::new_slice(len);
-        if let Ok(mut buffer) = result {
-            let buf = unsafe { Gc::<[u8]>::as_mut(&mut buffer) };
-            if get_avatar(buf).is_ok() {
-                return Ok(buffer);
-            }
-        }
-    };
-    Err(())
 }
 
 pub struct Lockscreen<T>
 where
     T: StringType,
 {
-    label: T,
-    bootscreen: bool,
+    label: Child<Label<T>>,
+    instruction: Child<Label<T>>,
     /// Used for unlocking the device from lockscreen
     invisible_buttons: Child<ButtonController<T>>,
 }
@@ -182,9 +150,14 @@ where
 {
     pub fn new(label: T, bootscreen: bool) -> Self {
         let invisible_btn_layout = ButtonLayout::text_none_text("".into(), "".into());
+        let instruction_str = if bootscreen {
+            "Click to Connect"
+        } else {
+            "Click to Unlock"
+        };
         Lockscreen {
-            label,
-            bootscreen,
+            label: Child::new(Label::centered(label, theme::TEXT_NORMAL)),
+            instruction: Child::new(Label::centered(instruction_str.into(), theme::TEXT_MONO)),
             invisible_buttons: Child::new(ButtonController::new(invisible_btn_layout)),
         }
     }
@@ -197,6 +170,8 @@ where
     type Msg = HomescreenMsg;
 
     fn place(&mut self, bounds: Rect) -> Rect {
+        self.label.place(LABEL_AREA);
+        self.instruction.place(LOCKED_INSTRUCTION_AREA);
         bounds
     }
 
@@ -209,27 +184,14 @@ where
     }
 
     fn paint(&mut self) {
-        let instruction = if self.bootscreen {
-            "Click to Connect"
-        } else {
-            "Click to Unlock"
-        };
-        display_center(
-            TOP_CENTER + Offset::y(LOCKED_INSTRUCTION_Y),
-            &instruction,
-            Font::MONO,
-        );
         Icon::new(theme::ICON_LOCK).draw(
             TOP_CENTER + Offset::y(LOCK_ICON_TOP_MARGIN),
             geometry::TOP_CENTER,
             theme::FG,
             theme::BG,
         );
-        display_center(
-            TOP_CENTER + Offset::y(LABEL_Y),
-            &self.label.as_ref(),
-            Font::NORMAL,
-        );
+        self.instruction.paint();
+        self.label.paint();
     }
 }
 
@@ -242,7 +204,7 @@ where
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("Homescreen");
-        t.string("label", self.label.as_ref());
+        t.child("label", &self.label);
     }
 }
 
@@ -253,6 +215,6 @@ where
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("Lockscreen");
-        t.string("label", self.label.as_ref());
+        t.child("label", &self.label);
     }
 }
