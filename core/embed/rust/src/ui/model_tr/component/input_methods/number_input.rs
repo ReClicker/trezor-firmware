@@ -6,9 +6,7 @@ use crate::{
     },
 };
 
-use super::super::{
-    trace::ButtonTrace, ButtonLayout, ChoiceFactory, ChoiceItem, ChoicePage, ChoicePageMsg,
-};
+use super::super::{ButtonLayout, ChoiceFactory, ChoiceItem, ChoicePage, ChoicePageMsg};
 use heapless::String;
 
 pub enum NumberInputMsg {
@@ -113,7 +111,7 @@ where
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-use super::super::{ButtonAction, ButtonPos};
+use super::super::{trace::ButtonTrace, ButtonAction, ButtonPos};
 
 #[cfg(feature = "ui_debug")]
 impl<T> ButtonTrace for NumberInput<T>

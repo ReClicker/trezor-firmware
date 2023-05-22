@@ -10,8 +10,7 @@ use crate::{
 };
 
 use super::super::{
-    theme, trace::ButtonTrace, ButtonLayout, ChangingTextLine, ChoiceFactory, ChoiceItem,
-    ChoicePage, ChoicePageMsg,
+    theme, ButtonLayout, ChangingTextLine, ChoiceFactory, ChoiceItem, ChoicePage, ChoicePageMsg,
 };
 use heapless::{String, Vec};
 
@@ -269,7 +268,7 @@ where
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-use super::super::{ButtonAction, ButtonPos};
+use super::super::{trace::ButtonTrace, ButtonAction, ButtonPos};
 #[cfg(feature = "ui_debug")]
 use crate::ui::util;
 

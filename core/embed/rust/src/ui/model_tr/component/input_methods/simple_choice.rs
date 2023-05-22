@@ -6,10 +6,8 @@ use crate::{
     },
 };
 
-use super::super::{
-    trace::ButtonTrace, ButtonLayout, ChoiceFactory, ChoiceItem, ChoicePage, ChoicePageMsg,
-};
-use heapless::{String, Vec};
+use super::super::{ButtonLayout, ChoiceFactory, ChoiceItem, ChoicePage, ChoicePageMsg};
+use heapless::Vec;
 
 pub enum SimpleChoiceMsg {
     ResultIndex(usize),
@@ -134,7 +132,9 @@ where
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-use super::super::{ButtonAction, ButtonPos};
+use super::super::{trace::ButtonTrace, ButtonAction, ButtonPos};
+#[cfg(feature = "ui_debug")]
+use heapless::String;
 
 #[cfg(feature = "ui_debug")]
 impl<T> ButtonTrace for SimpleChoice<T>

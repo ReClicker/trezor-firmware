@@ -7,8 +7,8 @@ use crate::{
 };
 
 use super::{
-    scrollbar::SCROLLBAR_SPACE, theme, title::Title, trace::ButtonTrace, ButtonAction,
-    ButtonController, ButtonControllerMsg, ButtonLayout, ButtonPos, FlowPages, Page, ScrollBar,
+    scrollbar::SCROLLBAR_SPACE, theme, title::Title, ButtonAction, ButtonController,
+    ButtonControllerMsg, ButtonLayout, ButtonPos, FlowPages, Page, ScrollBar,
 };
 
 /// To be returned directly from Flow.
@@ -290,6 +290,9 @@ where
 }
 
 // DEBUG-ONLY SECTION BELOW
+
+#[cfg(feature = "ui_debug")]
+use super::trace::ButtonTrace;
 
 #[cfg(feature = "ui_debug")]
 use heapless::String;

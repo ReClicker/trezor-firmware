@@ -6,9 +6,7 @@ use crate::{
     },
 };
 
-use super::{
-    theme, trace::ButtonTrace, ButtonController, ButtonControllerMsg, ButtonLayout, ButtonPos,
-};
+use super::{theme, ButtonController, ButtonControllerMsg, ButtonLayout, ButtonPos};
 
 pub enum CancelInfoConfirmMsg {
     Cancelled,
@@ -79,6 +77,9 @@ where
 }
 
 // DEBUG-ONLY SECTION BELOW
+
+#[cfg(feature = "ui_debug")]
+use super::trace::ButtonTrace;
 
 #[cfg(feature = "ui_debug")]
 use super::ButtonAction;

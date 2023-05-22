@@ -8,8 +8,8 @@ use crate::{
 };
 
 use super::{
-    constant, frame::ScrollableContent, theme, trace::ButtonTrace, ButtonController,
-    ButtonControllerMsg, ButtonDetails, ButtonLayout, ButtonPos,
+    constant, frame::ScrollableContent, theme, ButtonController, ButtonControllerMsg,
+    ButtonDetails, ButtonLayout, ButtonPos,
 };
 
 pub struct ButtonPage<T, U>
@@ -228,6 +228,9 @@ where
 }
 
 // DEBUG-ONLY SECTION BELOW
+
+#[cfg(feature = "ui_debug")]
+use super::trace::ButtonTrace;
 
 #[cfg(feature = "ui_debug")]
 use super::ButtonAction;
