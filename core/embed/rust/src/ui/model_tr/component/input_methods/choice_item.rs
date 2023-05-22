@@ -13,6 +13,7 @@ use super::super::{
 };
 
 const ICON_RIGHT_PADDING: i16 = 2;
+const STRING_LEN: usize = 50;
 
 /// Simple string component used as a choice item.
 #[derive(Clone)]
@@ -20,7 +21,7 @@ pub struct ChoiceItem<T>
 where
     T: StringType,
 {
-    text: String<50>,
+    text: String<STRING_LEN>,
     icon: Option<Icon>,
     btn_layout: ButtonLayout<T>,
     font: Font,
@@ -156,7 +157,7 @@ where
     }
 
     /// Changing the text.
-    pub fn set_text(&mut self, text: String<50>) {
+    pub fn set_text(&mut self, text: String<STRING_LEN>) {
         self.text = text;
     }
 }

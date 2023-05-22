@@ -9,7 +9,8 @@ use crate::{
 };
 
 use super::{
-    loader::Loader, theme, ButtonContent, ButtonDetails, ButtonPos, LoaderMsg, LoaderStyleSheet,
+    loader::{Loader, DEFAULT_DURATION_MS},
+    theme, ButtonContent, ButtonDetails, ButtonPos, LoaderMsg, LoaderStyleSheet,
 };
 
 pub enum HoldToConfirmMsg {
@@ -42,7 +43,7 @@ where
     pub fn from_button_details(pos: ButtonPos, btn_details: ButtonDetails<T>) -> Self {
         let duration = btn_details
             .duration
-            .unwrap_or_else(|| Duration::from_millis(1000));
+            .unwrap_or_else(|| Duration::from_millis(DEFAULT_DURATION_MS));
         match btn_details.content {
             ButtonContent::Text(text) => {
                 Self::text(pos, text, LoaderStyleSheet::default_loader(), duration)

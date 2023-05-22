@@ -12,6 +12,9 @@ use crate::{
 
 use super::theme;
 
+pub const DEFAULT_DURATION_MS: u32 = 1000;
+pub const SHRINKING_DURATION_MS: u32 = 500;
+
 pub enum LoaderMsg {
     GrownCompletely,
     ShrunkCompletely,
@@ -46,8 +49,8 @@ where
         Self {
             area: Rect::zero(),
             state: State::Initial,
-            growing_duration: Duration::from_millis(1000),
-            shrinking_duration: Duration::from_millis(500),
+            growing_duration: Duration::from_millis(DEFAULT_DURATION_MS),
+            shrinking_duration: Duration::from_millis(SHRINKING_DURATION_MS),
             text_overlay,
             styles,
         }
