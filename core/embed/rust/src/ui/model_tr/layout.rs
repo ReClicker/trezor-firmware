@@ -108,9 +108,9 @@ where
     }
 }
 
-impl<F, const M: usize, T> ComponentMsgObj for Flow<F, M, T>
+impl<F, T> ComponentMsgObj for Flow<F, T>
 where
-    F: Fn(usize) -> Page<M, T>,
+    F: Fn(usize) -> Page<T>,
     T: StringType,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
@@ -561,7 +561,7 @@ extern "C" fn new_confirm_output(n_args: usize, args: *const Obj, kwargs: *mut M
                     let btn_layout = ButtonLayout::cancel_none_text("CONFIRM".into());
                     let btn_actions = ButtonActions::cancel_none_next();
                     // Not putting hyphens in the address
-                    Page::<10, StrBuffer>::new(btn_layout, btn_actions, Font::MONO)
+                    Page::<StrBuffer>::new(btn_layout, btn_actions, Font::MONO)
                         .with_line_breaking(LineBreaking::BreakWordsNoHyphen)
                         .with_title(address_title.clone())
                         .text_mono(address.clone())
@@ -570,7 +570,7 @@ extern "C" fn new_confirm_output(n_args: usize, args: *const Obj, kwargs: *mut M
                     // AMOUNT + amount
                     let btn_layout = ButtonLayout::up_arrow_none_text("CONFIRM".into());
                     let btn_actions = ButtonActions::prev_none_confirm();
-                    Page::<10, StrBuffer>::new(btn_layout, btn_actions, Font::MONO)
+                    Page::<StrBuffer>::new(btn_layout, btn_actions, Font::MONO)
                         .with_title(amount_title.clone())
                         .newline()
                         .text_mono(amount.clone())
@@ -603,7 +603,7 @@ extern "C" fn new_confirm_total(n_args: usize, args: *const Obj, kwargs: *mut Ma
             let btn_layout = ButtonLayout::cancel_none_htc("HOLD TO CONFIRM".into());
             let btn_actions = ButtonActions::cancel_none_confirm();
 
-            let mut flow_page = Page::<15, StrBuffer>::new(btn_layout, btn_actions, Font::MONO)
+            let mut flow_page = Page::<StrBuffer>::new(btn_layout, btn_actions, Font::MONO)
                 .text_bold(total_label.clone())
                 .newline()
                 .text_mono(total_amount.clone())
@@ -637,7 +637,7 @@ extern "C" fn new_confirm_address(n_args: usize, args: *const Obj, kwargs: *mut 
 
             let btn_layout = ButtonLayout::cancel_armed_text("CONFIRM".into(), "i".into());
             let btn_actions = ButtonActions::cancel_confirm_info();
-            Page::<15, StrBuffer>::new(btn_layout, btn_actions, Font::BOLD)
+            Page::<StrBuffer>::new(btn_layout, btn_actions, Font::BOLD)
                 .with_line_breaking(LineBreaking::BreakWordsNoHyphen)
                 .text_mono(address.clone())
         };
@@ -656,8 +656,8 @@ fn tutorial_screen(
     text: StrBuffer,
     btn_layout: ButtonLayout<StrBuffer>,
     btn_actions: ButtonActions,
-) -> Page<10, StrBuffer> {
-    let mut page = Page::<10, StrBuffer>::new(
+) -> Page<StrBuffer> {
+    let mut page = Page::<StrBuffer>::new(
         btn_layout,
         btn_actions,
         if !title.is_empty() {
@@ -728,7 +728,7 @@ extern "C" fn tutorial(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj
                 },
                 // This page is special
                 5 => {
-                    Page::<10, StrBuffer>::new(
+                    Page::<StrBuffer>::new(
                         ButtonLayout::text_none_text("AGAIN".into(), "FINISH".into()),
                         ButtonActions::beginning_none_confirm(),
                         Font::MONO,
@@ -846,7 +846,7 @@ extern "C" fn new_confirm_fido(n_args: usize, args: *const Obj, kwargs: *mut Map
                 )
             };
 
-            Page::<10, StrBuffer>::new(btn_layout, btn_actions, Font::MONO)
+            Page::<StrBuffer>::new(btn_layout, btn_actions, Font::MONO)
                 .newline()
                 .text_mono(app_name.clone())
                 .newline()
@@ -898,7 +898,7 @@ extern "C" fn new_show_mismatch() -> Obj {
 
             let btn_layout = ButtonLayout::arrow_none_text("QUIT".into());
             let btn_actions = ButtonActions::cancel_none_confirm();
-            Page::<15, StrBuffer>::new(btn_layout, btn_actions, Font::MONO)
+            Page::<StrBuffer>::new(btn_layout, btn_actions, Font::MONO)
                 .text_bold("ADDRESS MISMATCH?".into())
                 .newline()
                 .newline_half()

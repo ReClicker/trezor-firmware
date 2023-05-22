@@ -19,15 +19,15 @@ pub enum FlowMsg {
     Info,
 }
 
-pub struct Flow<F, const M: usize, T>
+pub struct Flow<F, T>
 where
-    F: Fn(usize) -> Page<M, T>,
+    F: Fn(usize) -> Page<T>,
     T: StringType,
 {
     /// Function to get pages from
-    pages: FlowPages<F, M, T>,
+    pages: FlowPages<F, T>,
     /// Instance of the current Page
-    current_page: Page<M, T>,
+    current_page: Page<T>,
     /// Title being shown at the top in bold
     title: Option<Title<T>>,
     scrollbar: Child<ScrollBar>,
@@ -39,12 +39,12 @@ where
     return_confirmed_index: bool,
 }
 
-impl<F, const M: usize, T> Flow<F, M, T>
+impl<F, T> Flow<F, T>
 where
-    F: Fn(usize) -> Page<M, T>,
+    F: Fn(usize) -> Page<T>,
     T: StringType,
 {
-    pub fn new(pages: FlowPages<F, M, T>) -> Self {
+    pub fn new(pages: FlowPages<F, T>) -> Self {
         let current_page = pages.get(0);
         Self {
             pages,
@@ -181,9 +181,9 @@ where
     }
 }
 
-impl<F, const M: usize, T> Component for Flow<F, M, T>
+impl<F, T> Component for Flow<F, T>
 where
-    F: Fn(usize) -> Page<M, T>,
+    F: Fn(usize) -> Page<T>,
     T: StringType,
 {
     type Msg = FlowMsg;
@@ -300,9 +300,9 @@ use super::trace::ButtonTrace;
 use heapless::String;
 
 #[cfg(feature = "ui_debug")]
-impl<F, const M: usize, T> ButtonTrace for Flow<F, M, T>
+impl<F, T> ButtonTrace for Flow<F, T>
 where
-    F: Fn(usize) -> Page<M, T>,
+    F: Fn(usize) -> Page<T>,
     T: StringType,
 {
     /// Accounting for the possibility that button is connected with the
@@ -324,9 +324,9 @@ where
 }
 
 #[cfg(feature = "ui_debug")]
-impl<F, const M: usize, T> crate::trace::Trace for Flow<F, M, T>
+impl<F, T> crate::trace::Trace for Flow<F, T>
 where
-    F: Fn(usize) -> Page<M, T>,
+    F: Fn(usize) -> Page<T>,
     T: StringType,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {

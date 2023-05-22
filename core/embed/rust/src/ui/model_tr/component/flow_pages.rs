@@ -22,6 +22,10 @@ use super::{
     theme, ButtonActions, ButtonDetails, ButtonLayout,
 };
 
+// So that there is only one implementation, and not multiple generic ones
+// as would be via `const N: usize` generics.
+const MAX_OPS_PER_PAGE: usize = 15;
+
 /// Holding specific workflows that are created in `layout.rs`.
 /// Is returning a `Page` (page/screen) on demand
 /// based on the current page in `Flow`.
@@ -31,7 +35,7 @@ use super::{
 /// have theoretically unlimited number of pages without triggering SO.
 /// (Currently only the current page is stored on stack - in
 /// `Flow::current_page`.)
-pub struct FlowPages<F, const M: usize, T>
+pub struct FlowPages<F, T>
 where
     T: StringType,
 {
@@ -42,9 +46,9 @@ where
     _phantom: PhantomData<T>,
 }
 
-impl<F, const M: usize, T> FlowPages<F, M, T>
+impl<F, T> FlowPages<F, T>
 where
-    F: Fn(usize) -> Page<M, T>,
+    F: Fn(usize) -> Page<T>,
     T: StringType,
 {
     pub fn new(get_page: F, page_count: usize) -> Self {
@@ -56,7 +60,7 @@ where
     }
 
     /// Returns a page on demand on a specified index.
-    pub fn get(&self, page_index: usize) -> Page<M, T> {
+    pub fn get(&self, page_index: usize) -> Page<T> {
         (self.get_page)(page_index)
     }
 
@@ -85,11 +89,11 @@ where
 }
 
 #[derive(Clone)]
-pub struct Page<const M: usize, T>
+pub struct Page<T>
 where
     T: StringType,
 {
-    ops: Vec<Op<T>, M>,
+    ops: Vec<Op<T>, MAX_OPS_PER_PAGE>,
     text_layout: TextLayout,
     btn_layout: ButtonLayout<T>,
     btn_actions: ButtonActions,
@@ -100,7 +104,7 @@ where
 }
 
 // For `layout.rs`
-impl<const M: usize, T> Page<M, T>
+impl<T> Page<T>
 where
     T: StringType,
 {
@@ -143,7 +147,7 @@ where
 }
 
 // For `flow.rs`
-impl<const M: usize, T> Page<M, T>
+impl<T> Page<T>
 where
     T: StringType,
 {
@@ -220,14 +224,14 @@ where
 }
 
 // For `layout.rs` - single operations
-impl<const M: usize, T> Page<M, T>
+impl<T> Page<T>
 where
     T: StringType,
 {
     pub fn with_new_item(mut self, item: Op<T>) -> Self {
         self.ops
             .push(item)
-            .assert_if_debugging_ui("Could not push to self.ops");
+            .assert_if_debugging_ui("Could not push to self.ops - increase MAX_OPS_PER_PAGE.");
         self
     }
 
@@ -261,7 +265,7 @@ where
 }
 
 // For `layout.rs` - aggregating operations
-impl<const M: usize, T> Page<M, T>
+impl<T> Page<T>
 where
     T: StringType,
 {
@@ -279,7 +283,7 @@ where
 }
 
 // For painting and pagination
-impl<const M: usize, T> Page<M, T>
+impl<T> Page<T>
 where
     T: StringType,
 {
@@ -295,7 +299,7 @@ where
 }
 
 // Pagination
-impl<const M: usize, T> Paginate for Page<M, T>
+impl<T> Paginate for Page<T>
 where
     T: StringType,
 {
@@ -362,7 +366,7 @@ where
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-impl<const M: usize, T> crate::trace::Trace for Page<M, T>
+impl<T> crate::trace::Trace for Page<T>
 where
     T: StringType,
 {
