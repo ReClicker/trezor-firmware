@@ -19,7 +19,7 @@ enum ButtonState {
     Nothing,
     /// One Button is down when previously nothing was.
     /// _ _  ... ↓ _ | _ ↓
-    /// NEXT: Nothing, BothDown
+    /// NEXT: Nothing, BothDown, HTCNeedsRelease
     OneDown(PhysicalButton),
     /// Both buttons are down ("middle-click").
     /// ↓ _ | _ ↓ ... ↓ ↓
