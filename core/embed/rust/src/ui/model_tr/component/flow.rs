@@ -124,14 +124,15 @@ where
         self.update(ctx, true);
     }
 
-    /// Going to page by its absolute index.
-    /// Negative index means counting from the end.
-    fn go_to_page_absolute(&mut self, index: i16, ctx: &mut EventCtx) {
-        if index < 0 {
-            self.page_counter = self.pages.count() + index as usize;
-        } else {
-            self.page_counter = index as usize;
-        }
+    /// Going to the first page.
+    fn go_to_first_page(&mut self, ctx: &mut EventCtx) {
+        self.page_counter = 0;
+        self.update(ctx, true);
+    }
+
+    /// Going to the first page.
+    fn go_to_last_page(&mut self, ctx: &mut EventCtx) {
+        self.page_counter = self.pages.count() - 1;
         self.update(ctx, true);
     }
 
@@ -152,26 +153,27 @@ where
         });
     }
 
+    /// Current choice is still the same, only its inner state has changed
+    /// (its sub-page changed).
+    fn update_after_current_choice_inner_change(&mut self, ctx: &mut EventCtx) {
+        let inner_page = self.current_page.get_current_page();
+        self.scrollbar.mutate(ctx, |ctx, scrollbar| {
+            scrollbar.change_page(self.page_counter + inner_page);
+            scrollbar.request_complete_repaint(ctx);
+        });
+        self.update(ctx, false);
+    }
+
     /// When current choice contains paginated content, it may use the button
     /// event to just paginate itself.
     fn event_consumed_by_current_choice(&mut self, ctx: &mut EventCtx, pos: ButtonPos) -> bool {
         if matches!(pos, ButtonPos::Left) && self.current_page.has_prev_page() {
             self.current_page.go_to_prev_page();
-            let inner_page = self.current_page.get_current_page();
-            self.scrollbar.mutate(ctx, |ctx, scrollbar| {
-                scrollbar.change_page(self.page_counter + inner_page);
-                scrollbar.request_complete_repaint(ctx);
-            });
-            self.update(ctx, false);
+            self.update_after_current_choice_inner_change(ctx);
             true
         } else if matches!(pos, ButtonPos::Right) && self.current_page.has_next_page() {
             self.current_page.go_to_next_page();
-            let inner_page = self.current_page.get_current_page();
-            self.scrollbar.mutate(ctx, |ctx, scrollbar| {
-                scrollbar.change_page(self.page_counter + inner_page);
-                scrollbar.request_complete_repaint(ctx);
-            });
-            self.update(ctx, false);
+            self.update_after_current_choice_inner_change(ctx);
             true
         } else {
             false
@@ -248,12 +250,12 @@ where
                         self.go_to_next_page(ctx);
                         return None;
                     }
-                    ButtonAction::GoToIndex(index) => {
-                        self.go_to_page_absolute(index, ctx);
+                    ButtonAction::FirstPage => {
+                        self.go_to_first_page(ctx);
                         return None;
                     }
-                    ButtonAction::MovePageRelative(jump) => {
-                        self.go_to_page_relative(jump, ctx);
+                    ButtonAction::LastPage => {
+                        self.go_to_last_page(ctx);
                         return None;
                     }
                     ButtonAction::Cancel => return Some(FlowMsg::Cancelled),

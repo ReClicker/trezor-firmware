@@ -716,22 +716,21 @@ pub enum ButtonAction {
     NextPage,
     /// Go to the previous page of this flow
     PrevPage,
-    /// Go to a page of this flow specified by an index.
-    /// Negative numbers can be used to count from the end.
-    /// (0 ~ GoToFirstPage, -1 ~ GoToLastPage etc.)
-    GoToIndex(i16),
-    /// Go forwards/backwards a specified number of pages.
-    /// Negative numbers mean going back.
-    MovePageRelative(i16),
+    /// Go to the first page of this flow
+    FirstPage,
+    /// Go to the last page of this flow
+    LastPage,
     /// Cancel the whole layout - send Msg::Cancelled
     Cancel,
     /// Confirm the whole layout - send Msg::Confirmed
     Confirm,
     /// Send INFO message from layout - send Msg::Info
     Info,
-    /// Select current choice value
+    /// Select current choice value. Debug only
+    #[cfg(feature = "ui_debug")]
     Select,
-    /// Some custom specific action
+    /// Some custom specific action. Debug only
+    #[cfg(feature = "ui_debug")]
     Action(&'static str),
 }
 
@@ -744,7 +743,7 @@ pub struct ButtonActions {
 }
 
 impl ButtonActions {
-    pub fn new(
+    pub const fn new(
         left: Option<ButtonAction>,
         middle: Option<ButtonAction>,
         right: Option<ButtonAction>,
@@ -795,7 +794,7 @@ impl ButtonActions {
     /// Going to last page with left, to the next page with right
     pub fn last_none_next() -> Self {
         Self::new(
-            Some(ButtonAction::GoToIndex(-1)),
+            Some(ButtonAction::LastPage),
             None,
             Some(ButtonAction::NextPage),
         )
@@ -805,7 +804,7 @@ impl ButtonActions {
     /// with middle
     pub fn last_confirm_next() -> Self {
         Self::new(
-            Some(ButtonAction::GoToIndex(-1)),
+            Some(ButtonAction::LastPage),
             Some(ButtonAction::Confirm),
             Some(ButtonAction::NextPage),
         )
@@ -870,7 +869,7 @@ impl ButtonActions {
     /// Going to the beginning with left, confirming with right
     pub fn beginning_none_confirm() -> Self {
         Self::new(
-            Some(ButtonAction::GoToIndex(0)),
+            Some(ButtonAction::FirstPage),
             None,
             Some(ButtonAction::Confirm),
         )
@@ -879,7 +878,7 @@ impl ButtonActions {
     /// Going to the beginning with left, cancelling with right
     pub fn beginning_none_cancel() -> Self {
         Self::new(
-            Some(ButtonAction::GoToIndex(0)),
+            Some(ButtonAction::FirstPage),
             None,
             Some(ButtonAction::Cancel),
         )
@@ -942,12 +941,8 @@ impl ButtonAction {
         match self {
             ButtonAction::NextPage => "Next".into(),
             ButtonAction::PrevPage => "Prev".into(),
-            ButtonAction::GoToIndex(index) => {
-                build_string!(25, "Index(", inttostr!(*index), ")")
-            }
-            ButtonAction::MovePageRelative(index) => {
-                build_string!(25, "Relative(", inttostr!(*index), ")")
-            }
+            ButtonAction::FirstPage => "First".into(),
+            ButtonAction::LastPage => "Last".into(),
             ButtonAction::Cancel => "Cancel".into(),
             ButtonAction::Confirm => "Confirm".into(),
             ButtonAction::Info => "Info".into(),
