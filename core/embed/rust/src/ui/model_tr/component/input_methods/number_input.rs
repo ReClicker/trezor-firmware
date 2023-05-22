@@ -22,12 +22,6 @@ impl ChoiceFactoryNumberInput {
     fn new(min: u32, max: u32) -> Self {
         Self { min, max }
     }
-
-    /// NOTE: done to remediate some type-inconsistencies
-    /// with using self.count() in self.get()
-    fn self_count(&self) -> usize {
-        (self.max - self.min + 1) as usize
-    }
 }
 
 impl<T> ChoiceFactory<T> for ChoiceFactoryNumberInput
@@ -37,7 +31,7 @@ where
     type Item = ChoiceItem<T>;
 
     fn count(&self) -> usize {
-        self.self_count()
+        (self.max - self.min + 1) as usize
     }
 
     fn get(&self, choice_index: usize) -> ChoiceItem<T> {
@@ -50,7 +44,7 @@ where
         if choice_index == 0 {
             choice_item.set_left_btn(None);
         }
-        if choice_index == self.self_count() - 1 {
+        if choice_index == <ChoiceFactoryNumberInput as ChoiceFactory<T>>::count(self) - 1 {
             choice_item.set_right_btn(None);
         }
 
