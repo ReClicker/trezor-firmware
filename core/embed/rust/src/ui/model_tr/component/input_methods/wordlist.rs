@@ -62,19 +62,18 @@ impl ChoiceFactory for ChoiceFactoryWordlist {
     type Action = WordlistAction;
 
     fn count(&self) -> usize {
-        // Accounting for the DELETE option
-        if self.offer_words {
-            self.wordlist.len() + 1
+        // Accounting for the DELETE option (+1)
+        1 + if self.offer_words {
+            self.wordlist.len()
         } else {
-            self.wordlist.get_available_letters("").count() + 1
+            self.wordlist.get_available_letters(None).count()
         }
     }
 
     fn get(&self, choice_index: usize) -> (ChoiceItem, Self::Action) {
-        // Letters have a carousel, words do not
         // Putting DELETE as the first option in both cases
         // (is a requirement for WORDS, doing it for LETTERS as well to unite it)
-        if choice_index == 0 {
+        if choice_index == DELETE_INDEX {
             return (
                 ChoiceItem::new("DELETE", ButtonLayout::arrow_armed_arrow("CONFIRM"))
                     .with_icon(Icon::new(theme::ICON_DELETE)),
@@ -90,7 +89,7 @@ impl ChoiceFactory for ChoiceFactoryWordlist {
         } else {
             let letter = self
                 .wordlist
-                .get_available_letters("")
+                .get_available_letters(None)
                 .nth(choice_index - 1)
                 .unwrap_or_default();
             (
@@ -139,6 +138,7 @@ impl WordlistEntry {
     fn update(&mut self, ctx: &mut EventCtx) {
         self.update_chosen_letters(ctx);
         let new_choices = self.get_current_choices();
+        self.offer_words = new_choices.offer_words;
         // Not using carousel in case of words, as that looks weird in case
         // there is only one word to choose from.
         self.choice_page.reset(

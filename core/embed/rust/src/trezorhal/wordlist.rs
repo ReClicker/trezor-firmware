@@ -4,75 +4,83 @@ use cstr_core::CStr;
 
 /// Holds all the possible words with the possibility to interact
 /// with the "list" - filtering it further, getting their count, etc.
-pub struct Wordlist(&'static [*const cty::c_char]);
+pub struct Wordlist {
+    words: &'static [*const cty::c_char],
+    /// Holds the length of prefix which was used to filter the list
+    /// (how many beginning characters are common for all words).
+    prefix_len: usize,
+}
 
 impl Wordlist {
+    pub fn new(words: &'static [*const cty::c_char], prefix_len: usize) -> Self {
+        Self { words, prefix_len }
+    }
+
     /// Initialize BIP39 wordlist.
     pub fn bip39() -> Self {
-        Self(unsafe { &ffi::BIP39_WORDLIST_ENGLISH })
+        Self::new(unsafe { &ffi::BIP39_WORDLIST_ENGLISH }, 0)
     }
 
     /// Initialize SLIP39 wordlist.
     pub fn slip39() -> Self {
-        Self(unsafe { &ffi::SLIP39_WORDLIST })
+        Self::new(unsafe { &ffi::SLIP39_WORDLIST }, 0)
     }
 
     /// Returns all possible letters that form a valid word together with some
     /// prefix. Alphabetically sorted.
-    pub fn get_available_letters(&self, prefix: &str) -> impl Iterator<Item = char> {
-        // TODO: consider returning -> Vec<char, 26>?
-        // Fill a "set" of all unique characters, not sorted yet
-        let mut suffixes: heapless::Vec<char, 26> = heapless::Vec::new();
-        for word in self.iter() {
-            if word.starts_with(prefix) && word.len() > prefix.len() {
-                let following_char = unwrap!(word.chars().nth(prefix.len()));
-                if !suffixes.contains(&following_char) {
-                    unwrap!(suffixes.push(following_char));
-                }
-            }
-        }
+    /// When prefix is None, it will be working with the current prefix length.
+    pub fn get_available_letters(&self, prefix: Option<&str>) -> impl Iterator<Item = char> {
+        let mut prev_char = '\0';
 
-        suffixes.sort_unstable();
-        suffixes.into_iter()
+        let (iterator, prefix_len) = if let Some(prefix) = prefix {
+            (self.filter_prefix(prefix).iter(), prefix.len())
+        } else {
+            (self.iter(), self.prefix_len)
+        };
+
+        iterator.filter_map(move |word| {
+            if word.len() <= prefix_len {
+                return None;
+            }
+            let following_char = unwrap!(word.chars().nth(prefix_len));
+            if following_char != prev_char {
+                prev_char = following_char;
+                Some(following_char)
+            } else {
+                None
+            }
+        })
     }
 
     /// Only leaves words that have a specified prefix. Throw away others.
     pub fn filter_prefix(&self, prefix: &str) -> Self {
-        let mut start = 0usize;
-        let mut end = self.0.len();
-        for (i, word) in self.0.iter().enumerate() {
-            // SAFETY: We assume our slice is an array of 0-terminated strings.
-            match unsafe { prefix_cmp(prefix, *word) } {
-                Ordering::Less => {
-                    start = i + 1;
-                }
-                Ordering::Greater => {
-                    end = i;
-                    break;
-                }
-                _ => {}
-            }
-        }
-        Self(&self.0[start..end])
+        // SAFETY: We assume our slice is an array of 0-terminated strings.
+        let start = self
+            .words
+            .partition_point(|&word| matches!(unsafe { prefix_cmp(prefix, word) }, Ordering::Less));
+        let end = self.words.partition_point(|&word| {
+            !matches!(unsafe { prefix_cmp(prefix, word) }, Ordering::Greater)
+        });
+        Self::new(&self.words[start..end], prefix.len())
     }
 
     /// Get a word at the certain position.
     pub fn get(&self, index: usize) -> Option<&'static str> {
         // SAFETY: we assume every word in the wordlist is a valid 0-terminated UTF-8
         // string.
-        self.0
+        self.words
             .get(index)
             .map(|word| unsafe { from_utf8_unchecked(*word) })
     }
 
     /// How many words are currently in the list.
     pub const fn len(&self) -> usize {
-        self.0.len()
+        self.words.len()
     }
 
     /// Iterator of all current words.
     pub fn iter(&self) -> impl Iterator<Item = &'static str> {
-        self.0
+        self.words
             .iter()
             .map(|word| unsafe { from_utf8_unchecked(*word) })
     }
@@ -180,25 +188,25 @@ mod tests {
     #[test]
     fn test_get_available_letters() {
         let result = Wordlist::bip39()
-            .get_available_letters("ab")
+            .get_available_letters(Some("ab"))
             .collect::<Vec<_>>();
         let expected_result = vec!['a', 'i', 'l', 'o', 's', 'u'];
         assert_eq!(result, expected_result);
 
         let result = Wordlist::bip39()
-            .get_available_letters("str")
+            .get_available_letters(Some("str"))
             .collect::<Vec<_>>();
         let expected_result = vec!['a', 'e', 'i', 'o', 'u'];
         assert_eq!(result, expected_result);
 
         let result = Wordlist::bip39()
-            .get_available_letters("zoo")
+            .get_available_letters(Some("zoo"))
             .collect::<Vec<_>>();
         let expected_result = vec![];
         assert_eq!(result, expected_result);
 
         let result = Wordlist::bip39()
-            .get_available_letters("")
+            .get_available_letters(None)
             .collect::<Vec<_>>();
         let expected_result = vec![
             'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
