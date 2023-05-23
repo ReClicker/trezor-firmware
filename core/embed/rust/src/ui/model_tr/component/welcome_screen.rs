@@ -1,14 +1,13 @@
 use crate::ui::{
     component::{Component, Event, EventCtx, Never},
     display::{self, Icon},
-    geometry::{self, Offset, Rect},
+    geometry::{self, Offset, Rect}, constant::MODEL_NAME,
 };
 
 use super::super::theme;
 
 const TEXT_BOTTOM_MARGIN: i16 = 2; // matching the homescreen label margin
 const ICON_TOP_MARGIN: i16 = 11;
-const MODEL_NAME: &str = "Trezor Model R";
 const MODEL_NAME_FONT: display::Font = display::Font::NORMAL;
 
 pub struct WelcomeScreen {

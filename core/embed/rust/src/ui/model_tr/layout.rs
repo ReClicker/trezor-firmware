@@ -1201,7 +1201,10 @@ extern "C" fn new_show_progress_coinjoin(n_args: usize, args: *const Obj, kwargs
 }
 extern "C" fn new_show_homescreen(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
-        let label: StrBuffer = kwargs.get(Qstr::MP_QSTR_label)?.try_into()?;
+        let label: StrBuffer = kwargs
+            .get(Qstr::MP_QSTR_label)?
+            .try_into_option()?
+            .unwrap_or_else(|| constant::MODEL_NAME.into());
         let notification: Option<StrBuffer> =
             kwargs.get(Qstr::MP_QSTR_notification)?.try_into_option()?;
         let notification_level: u8 = kwargs.get_or(Qstr::MP_QSTR_notification_level, 0)?;
@@ -1219,7 +1222,10 @@ extern "C" fn new_show_homescreen(n_args: usize, args: *const Obj, kwargs: *mut 
 
 extern "C" fn new_show_lockscreen(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
-        let label: StrBuffer = kwargs.get(Qstr::MP_QSTR_label)?.try_into()?;
+        let label: StrBuffer = kwargs
+            .get(Qstr::MP_QSTR_label)?
+            .try_into_option()?
+            .unwrap_or_else(|| constant::MODEL_NAME.into());
         let bootscreen: bool = kwargs.get(Qstr::MP_QSTR_bootscreen)?.try_into()?;
         let skip_first_paint: bool = kwargs.get(Qstr::MP_QSTR_skip_first_paint)?.try_into()?;
 
@@ -1561,7 +1567,7 @@ pub static mp_module_trezorui2: Module = obj_module! {
 
     /// def show_homescreen(
     ///     *,
-    ///     label: str,
+    ///     label: str | None,
     ///     hold: bool,  # unused on TR
     ///     notification: str | None,
     ///     notification_level: int = 0,
@@ -1572,7 +1578,7 @@ pub static mp_module_trezorui2: Module = obj_module! {
 
     /// def show_lockscreen(
     ///     *,
-    ///     label: str,
+    ///     label: str | None,
     ///     bootscreen: bool,
     ///     skip_first_paint: bool,
     /// ) -> CANCELLED:

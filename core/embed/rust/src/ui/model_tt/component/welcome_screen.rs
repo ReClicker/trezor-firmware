@@ -6,12 +6,11 @@ use crate::ui::{
     component::{Component, Event, EventCtx, Never},
     display::Icon,
     geometry::{self, Offset, Rect},
-    model_tt::theme,
+    model_tt::theme, constant::MODEL_NAME,
 };
 
 const TEXT_BOTTOM_MARGIN: i16 = 24; // matching the homescreen label margin
 const ICON_TOP_MARGIN: i16 = 48;
-const MODEL_NAME: &str = "Trezor Model T";
 #[cfg(not(feature = "bootloader"))]
 const MODEL_NAME_FONT: display::Font = display::Font::DEMIBOLD;
 

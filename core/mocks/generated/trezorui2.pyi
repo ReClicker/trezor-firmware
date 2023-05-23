@@ -342,7 +342,7 @@ def show_progress_coinjoin(
 # rust/src/ui/model_tr/layout.rs
 def show_homescreen(
     *,
-    label: str,
+    label: str | None,
     hold: bool,  # unused on TR
     notification: str | None,
     notification_level: int = 0,
@@ -354,7 +354,7 @@ def show_homescreen(
 # rust/src/ui/model_tr/layout.rs
 def show_lockscreen(
     *,
-    label: str,
+    label: str | None,
     bootscreen: bool,
     skip_first_paint: bool,
 ) -> CANCELLED:
@@ -773,7 +773,7 @@ def show_progress_coinjoin(
 # rust/src/ui/model_tt/layout.rs
 def show_homescreen(
     *,
-    label: str,
+    label: str | None,
     hold: bool,
     notification: str | None,
     notification_level: int = 0,
@@ -785,7 +785,7 @@ def show_homescreen(
 # rust/src/ui/model_tt/layout.rs
 def show_lockscreen(
     *,
-    label: str,
+    label: str | None,
     bootscreen: bool,
     skip_first_paint: bool,
 ) -> CANCELLED:
