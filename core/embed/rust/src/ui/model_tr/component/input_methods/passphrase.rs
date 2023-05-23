@@ -46,7 +46,12 @@ const SPACE_INDEX: usize = 7;
 // Menu text, action, icon data, middle button with CONFIRM
 const MENU: [(&str, PassphraseAction, Option<&'static [u8]>, bool); MENU_LENGTH] = [
     ("SHOW", PassphraseAction::Show, Some(theme::ICON_EYE), true),
-    ("", PassphraseAction::CancelOrDelete, None, true), // will be chosen dynamically
+    (
+        "CANCEL_OR_DELETE", // will be chosen dynamically
+        PassphraseAction::CancelOrDelete,
+        None,
+        true,
+    ),
     (
         "ENTER",
         PassphraseAction::Enter,
