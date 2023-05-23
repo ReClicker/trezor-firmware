@@ -65,19 +65,14 @@ def emulator(gen: str, tag: str) -> Iterator[Emulator]:
 )
 def test_passphrase_works(emulator: Emulator):
     """Check that passphrase handling in trezorlib works correctly in all versions."""
-    if emulator.client.features.model in ("T", "R") and emulator.client.version < (
-        2,
-        3,
-        0,
-    ):
+    if emulator.client.features.model == "T" and emulator.client.version < (2, 3, 0):
         expected_responses = [
             messages.PassphraseRequest,
             messages.Deprecated_PassphraseStateRequest,
             messages.Address,
         ]
     elif (
-        emulator.client.features.model in ("T", "R")
-        and emulator.client.version < (2, 3, 3)
+        emulator.client.features.model == "T" and emulator.client.version < (2, 3, 3)
     ) or (
         emulator.client.features.model == "1" and emulator.client.version < (1, 9, 3)
     ):
@@ -107,11 +102,7 @@ def test_init_device(emulator: Emulator):
     """Check that passphrase caching and session_id retaining works correctly across
     supported versions.
     """
-    if emulator.client.features.model in ("T", "R") and emulator.client.version < (
-        2,
-        3,
-        0,
-    ):
+    if emulator.client.features.model == "T" and emulator.client.version < (2, 3, 0):
         expected_responses = [
             messages.PassphraseRequest,
             messages.Deprecated_PassphraseStateRequest,
@@ -120,8 +111,7 @@ def test_init_device(emulator: Emulator):
             messages.Address,
         ]
     elif (
-        emulator.client.features.model in ("T", "R")
-        and emulator.client.version < (2, 3, 3)
+        emulator.client.features.model == "T" and emulator.client.version < (2, 3, 3)
     ) or (
         emulator.client.features.model == "1" and emulator.client.version < (1, 9, 3)
     ):
