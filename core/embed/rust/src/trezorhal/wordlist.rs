@@ -26,19 +26,12 @@ impl Wordlist {
         Self::new(unsafe { &ffi::SLIP39_WORDLIST }, 0)
     }
 
-    /// Returns all possible letters that form a valid word together with some
-    /// prefix. Alphabetically sorted.
-    /// When prefix is None, it will be working with the current prefix length.
-    pub fn get_available_letters(&self, prefix: Option<&str>) -> impl Iterator<Item = char> {
+    /// Returns all possible letters from current wordlist that form a valid
+    /// word. Alphabetically sorted.
+    pub fn get_available_letters(&self) -> impl Iterator<Item = char> {
         let mut prev_char = '\0';
-
-        let (iterator, prefix_len) = if let Some(prefix) = prefix {
-            (self.filter_prefix(prefix).iter(), prefix.len())
-        } else {
-            (self.iter(), self.prefix_len)
-        };
-
-        iterator.filter_map(move |word| {
+        let prefix_len = self.prefix_len;
+        self.iter().filter_map(move |word| {
             if word.len() <= prefix_len {
                 return None;
             }
@@ -188,25 +181,28 @@ mod tests {
     #[test]
     fn test_get_available_letters() {
         let result = Wordlist::bip39()
-            .get_available_letters(Some("ab"))
+            .filter_prefix("ab")
+            .get_available_letters()
             .collect::<Vec<_>>();
         let expected_result = vec!['a', 'i', 'l', 'o', 's', 'u'];
         assert_eq!(result, expected_result);
 
         let result = Wordlist::bip39()
-            .get_available_letters(Some("str"))
+            .filter_prefix("str")
+            .get_available_letters()
             .collect::<Vec<_>>();
         let expected_result = vec!['a', 'e', 'i', 'o', 'u'];
         assert_eq!(result, expected_result);
 
         let result = Wordlist::bip39()
-            .get_available_letters(Some("zoo"))
+            .filter_prefix("zoo")
+            .get_available_letters()
             .collect::<Vec<_>>();
         let expected_result = vec![];
         assert_eq!(result, expected_result);
 
         let result = Wordlist::bip39()
-            .get_available_letters(None)
+            .get_available_letters()
             .collect::<Vec<_>>();
         let expected_result = vec![
             'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',

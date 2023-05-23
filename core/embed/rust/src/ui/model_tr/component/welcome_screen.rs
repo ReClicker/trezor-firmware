@@ -1,7 +1,8 @@
 use crate::ui::{
     component::{Component, Event, EventCtx, Never},
+    constant::MODEL_NAME,
     display::{self, Icon},
-    geometry::{self, Offset, Rect}, constant::MODEL_NAME,
+    geometry::{self, Offset, Rect},
 };
 
 use super::super::theme;

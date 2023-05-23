@@ -66,7 +66,7 @@ impl ChoiceFactory for ChoiceFactoryWordlist {
         1 + if self.offer_words {
             self.wordlist.len()
         } else {
-            self.wordlist.get_available_letters(None).count()
+            self.wordlist.get_available_letters().count()
         }
     }
 
@@ -89,7 +89,7 @@ impl ChoiceFactory for ChoiceFactoryWordlist {
         } else {
             let letter = self
                 .wordlist
-                .get_available_letters(None)
+                .get_available_letters()
                 .nth(choice_index - 1)
                 .unwrap_or_default();
             (

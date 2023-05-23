@@ -4,9 +4,10 @@ use crate::ui::display;
 use crate::ui::model_tt::bootloader::theme::DEVICE_NAME;
 use crate::ui::{
     component::{Component, Event, EventCtx, Never},
+    constant::MODEL_NAME,
     display::Icon,
     geometry::{self, Offset, Rect},
-    model_tt::theme, constant::MODEL_NAME,
+    model_tt::theme,
 };
 
 const TEXT_BOTTOM_MARGIN: i16 = 24; // matching the homescreen label margin

@@ -8,7 +8,7 @@ use crate::{
         obj::Obj,
         util::try_or_raise,
     },
-    storage::{load_avatar, get_avatar_len},
+    storage::{get_avatar_len, load_avatar},
     ui::{
         component::text::{
             paragraphs::{Paragraph, ParagraphSource, ParagraphStrType},
