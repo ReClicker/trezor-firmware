@@ -1,6 +1,9 @@
-use crate::ui::{
-    display::{self, rect_fill, rect_fill_corners, rect_outline_rounded, Font, Icon},
-    geometry::{Offset, Rect, BOTTOM_LEFT},
+use crate::{
+    strutil::ShortString,
+    ui::{
+        display::{self, rect_fill, rect_fill_corners, rect_outline_rounded, Font, Icon},
+        geometry::{Offset, Rect, BOTTOM_LEFT},
+    },
 };
 
 use heapless::String;
@@ -8,12 +11,11 @@ use heapless::String;
 use super::super::{theme, ButtonDetails, ButtonLayout, Choice};
 
 const ICON_RIGHT_PADDING: i16 = 2;
-const STRING_LEN: usize = 50;
 
 /// Simple string component used as a choice item.
 #[derive(Clone)]
 pub struct ChoiceItem {
-    text: String<STRING_LEN>,
+    text: ShortString,
     icon: Option<Icon>,
     btn_layout: ButtonLayout<&'static str>,
     font: Font,
@@ -57,7 +59,7 @@ impl ChoiceItem {
     }
 
     /// Changing the text.
-    pub fn set_text(&mut self, text: String<STRING_LEN>) {
+    pub fn set_text(&mut self, text: ShortString) {
         self.text = text;
     }
 

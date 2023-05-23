@@ -233,9 +233,7 @@ where
 use super::trace::ButtonTrace;
 
 #[cfg(feature = "ui_debug")]
-use super::ButtonAction;
-#[cfg(feature = "ui_debug")]
-use heapless::String;
+use crate::strutil::ShortString;
 
 #[cfg(feature = "ui_debug")]
 impl<T, U> ButtonTrace for ButtonPage<T, U>
@@ -243,27 +241,27 @@ where
     T: crate::trace::Trace + Paginate + Component,
     U: StringType,
 {
-    fn get_btn_action(&self, pos: ButtonPos) -> String<25> {
-        match pos {
-            ButtonPos::Left => {
-                if self.has_previous_page() {
-                    ButtonAction::PrevPage.string()
-                } else if self.cancel_btn_details.is_some() {
-                    ButtonAction::Cancel.string()
-                } else {
-                    ButtonAction::empty()
-                }
-            }
-            ButtonPos::Right => {
-                if self.has_next_page() {
-                    ButtonAction::NextPage.string()
-                } else if self.confirm_btn_details.is_some() {
-                    ButtonAction::Confirm.string()
-                } else {
-                    ButtonAction::empty()
-                }
-            }
-            ButtonPos::Middle => ButtonAction::empty(),
+    fn get_left_action(&self) -> ShortString {
+        if self.has_previous_page() {
+            "Prev".into()
+        } else if self.cancel_btn_details.is_some() {
+            "Cancel".into()
+        } else {
+            "None".into()
+        }
+    }
+
+    fn get_middle_action(&self) -> ShortString {
+        "None".into()
+    }
+
+    fn get_right_action(&self) -> ShortString {
+        if self.has_next_page() {
+            "Next".into()
+        } else if self.confirm_btn_details.is_some() {
+            "Confirm".into()
+        } else {
+            "None".into()
         }
     }
 }

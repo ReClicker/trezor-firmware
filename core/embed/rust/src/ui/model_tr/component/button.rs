@@ -1,5 +1,5 @@
 use crate::{
-    strutil::StringType,
+    strutil::{ShortString, StringType},
     time::Duration,
     ui::{
         component::{Component, Event, EventCtx},
@@ -722,12 +722,6 @@ pub enum ButtonAction {
     Confirm,
     /// Send INFO message from layout - send Msg::Info
     Info,
-    /// Select current choice value. Debug only
-    #[cfg(feature = "ui_debug")]
-    Select,
-    /// Some custom specific action. Debug only
-    #[cfg(feature = "ui_debug")]
-    Action(&'static str),
 }
 
 /// Storing actions for all three possible buttons.
@@ -933,7 +927,7 @@ where
 #[cfg(feature = "ui_debug")]
 impl ButtonAction {
     /// Describing the action as a string. Debug-only.
-    pub fn string(&self) -> String<25> {
+    pub fn string(&self) -> ShortString {
         match self {
             ButtonAction::NextPage => "Next".into(),
             ButtonAction::PrevPage => "Prev".into(),
@@ -942,18 +936,6 @@ impl ButtonAction {
             ButtonAction::Cancel => "Cancel".into(),
             ButtonAction::Confirm => "Confirm".into(),
             ButtonAction::Info => "Info".into(),
-            ButtonAction::Select => "Select".into(),
-            ButtonAction::Action(action) => (*action).into(),
         }
-    }
-
-    /// Adding a description to the Select action.
-    pub fn select_item<T: AsRef<str>>(item: T) -> String<25> {
-        build_string!(25, &Self::Select.string(), "(", item.as_ref(), ")")
-    }
-
-    /// When there is no action.
-    pub fn empty() -> String<25> {
-        "None".into()
     }
 }

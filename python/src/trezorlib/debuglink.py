@@ -306,12 +306,7 @@ class LayoutContent(UnstructuredJSONReader):
 
     def get_middle_select(self) -> str:
         """What is the choice being selected right now."""
-        middle_action = self.button_actions()[1]
-        if middle_action.startswith("Select("):
-            # Parsing the value out of "Select(value)"
-            return middle_action[7:-1]
-        else:
-            return middle_action
+        return self.button_actions()[1]
 
     def button_actions(self) -> Tuple[str, str, str]:
         """Getting actions for all three possible buttons."""

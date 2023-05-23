@@ -198,7 +198,7 @@ impl ChoiceFactoryPassphrase {
         } else {
             let ch = get_char(&self.current_category, choice_index);
             (
-                ChoiceItem::new(char_to_string::<1>(ch), ButtonLayout::default_three_icons()),
+                ChoiceItem::new(char_to_string(ch), ButtonLayout::default_three_icons()),
                 PassphraseAction::Character(ch),
             )
         }
@@ -373,7 +373,10 @@ impl Component for PassphraseEntry {
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-use super::super::{trace::ButtonTrace, ButtonAction, ButtonPos};
+use super::super::trace::ButtonTrace;
+
+#[cfg(feature = "ui_debug")]
+use crate::strutil::ShortString;
 
 #[cfg(feature = "ui_debug")]
 impl ChoiceCategory {
@@ -390,23 +393,17 @@ impl ChoiceCategory {
 
 #[cfg(feature = "ui_debug")]
 impl ButtonTrace for PassphraseEntry {
-    fn get_btn_action(&self, pos: ButtonPos) -> String<25> {
-        match pos {
-            ButtonPos::Left => ButtonAction::PrevPage.string(),
-            ButtonPos::Right => ButtonAction::NextPage.string(),
-            ButtonPos::Middle => {
-                let current_index = self.choice_page.page_index();
-                match &self.current_category {
-                    ChoiceCategory::Menu => ButtonAction::select_item(MENU[current_index].0),
-                    _ => {
-                        // There is "MENU" option at the end
-                        match self.choice_page.has_next_choice() {
-                            false => ButtonAction::Action("BACK").string(),
-                            true => {
-                                let ch = get_char(&self.current_category, current_index);
-                                ButtonAction::select_item(char_to_string::<1>(ch))
-                            }
-                        }
+    fn get_middle_action(&self) -> ShortString {
+        let current_index = self.choice_page.page_index();
+        match &self.current_category {
+            ChoiceCategory::Menu => MENU[current_index].0.into(),
+            _ => {
+                // There is "MENU" option at the end
+                match self.choice_page.has_next_choice() {
+                    false => "BACK".into(),
+                    true => {
+                        let ch = get_char(&self.current_category, current_index);
+                        char_to_string(ch)
                     }
                 }
             }

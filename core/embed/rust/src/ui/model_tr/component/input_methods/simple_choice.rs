@@ -123,29 +123,31 @@ where
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-use super::super::{trace::ButtonTrace, ButtonAction, ButtonPos};
+use super::super::trace::ButtonTrace;
 #[cfg(feature = "ui_debug")]
-use heapless::String;
+use crate::strutil::ShortString;
 
 #[cfg(feature = "ui_debug")]
 impl<T> ButtonTrace for SimpleChoice<T>
 where
     T: StringType,
 {
-    fn get_btn_action(&self, pos: ButtonPos) -> String<25> {
-        match pos {
-            ButtonPos::Left => match self.choice_page.has_previous_choice() {
-                true => ButtonAction::PrevPage.string(),
-                false => ButtonAction::empty(),
-            },
-            ButtonPos::Right => match self.choice_page.has_next_choice() {
-                true => ButtonAction::NextPage.string(),
-                false => ButtonAction::empty(),
-            },
-            ButtonPos::Middle => {
-                let current_index = self.choice_page.page_index();
-                ButtonAction::select_item(self.choices[current_index].as_ref())
-            }
+    fn get_left_action(&self) -> ShortString {
+        match self.choice_page.has_previous_choice() {
+            true => "Prev".into(),
+            false => "None".into(),
+        }
+    }
+
+    fn get_middle_action(&self) -> ShortString {
+        let current_index = self.choice_page.page_index();
+        self.choices[current_index].as_ref().into()
+    }
+
+    fn get_right_action(&self) -> ShortString {
+        match self.choice_page.has_previous_choice() {
+            true => "Next".into(),
+            false => "None".into(),
         }
     }
 }

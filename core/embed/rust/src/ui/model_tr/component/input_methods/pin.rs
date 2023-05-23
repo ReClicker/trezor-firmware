@@ -234,26 +234,20 @@ where
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-use super::super::{trace::ButtonTrace, ButtonAction, ButtonPos};
+use super::super::trace::ButtonTrace;
+
+#[cfg(feature = "ui_debug")]
+use crate::strutil::ShortString;
 
 #[cfg(feature = "ui_debug")]
 impl<T> ButtonTrace for PinEntry<T>
 where
     T: StringType,
 {
-    fn get_btn_action(&self, pos: ButtonPos) -> String<25> {
-        match pos {
-            ButtonPos::Left => ButtonAction::PrevPage.string(),
-            ButtonPos::Right => ButtonAction::NextPage.string(),
-            ButtonPos::Middle => {
-                let page_index = self.choice_page.page_index();
-                let (text, action, _) = CHOICES[page_index];
-                match action {
-                    PinAction::Digit(_) => ButtonAction::select_item(text),
-                    _ => ButtonAction::Action(text).string(),
-                }
-            }
-        }
+    fn get_middle_action(&self) -> ShortString {
+        let page_index = self.choice_page.page_index();
+        let text = CHOICES[page_index].0;
+        text.into()
     }
 }
 

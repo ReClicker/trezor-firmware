@@ -267,8 +267,6 @@ where
                         }
                     }
                     ButtonAction::Info => return Some(FlowMsg::Info),
-                    ButtonAction::Select => {}
-                    ButtonAction::Action(_) => {}
                 }
             }
         };
@@ -297,7 +295,22 @@ where
 use super::trace::ButtonTrace;
 
 #[cfg(feature = "ui_debug")]
-use heapless::String;
+use crate::strutil::ShortString;
+
+#[cfg(feature = "ui_debug")]
+impl<F, T> Flow<F, T>
+where
+    F: Fn(usize) -> Page<T>,
+    T: StringType,
+{
+    fn get_action_by_button_pos(&self, button_pos: ButtonPos) -> ShortString {
+        let btn_actions = self.current_page.btn_actions();
+        match btn_actions.get_action(button_pos) {
+            Some(action) => action.string(),
+            None => "None".into(),
+        }
+    }
+}
 
 #[cfg(feature = "ui_debug")]
 impl<F, T> ButtonTrace for Flow<F, T>
@@ -305,20 +318,24 @@ where
     F: Fn(usize) -> Page<T>,
     T: StringType,
 {
-    /// Accounting for the possibility that button is connected with the
-    /// currently paginated flow_page (only Prev or Next in that case).
-    fn get_btn_action(&self, pos: ButtonPos) -> String<25> {
-        if matches!(pos, ButtonPos::Left) && self.current_page.has_prev_page() {
-            ButtonAction::PrevPage.string()
-        } else if matches!(pos, ButtonPos::Right) && self.current_page.has_next_page() {
-            ButtonAction::NextPage.string()
-        } else {
-            let btn_actions = self.current_page.btn_actions();
+    // Accounting for the possibility that button is connected with the
+    // currently paginated flow_page (only Prev or Next in that case).
 
-            match btn_actions.get_action(pos) {
-                Some(action) => action.string(),
-                None => ButtonAction::empty(),
-            }
+    fn get_left_action(&self) -> ShortString {
+        match self.current_page.has_prev_page() {
+            true => "Prev".into(),
+            false => self.get_action_by_button_pos(ButtonPos::Left),
+        }
+    }
+
+    fn get_middle_action(&self) -> ShortString {
+        self.get_action_by_button_pos(ButtonPos::Middle)
+    }
+
+    fn get_right_action(&self) -> ShortString {
+        match self.current_page.has_next_page() {
+            true => "Next".into(),
+            false => self.get_action_by_button_pos(ButtonPos::Right),
         }
     }
 }

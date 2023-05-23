@@ -82,9 +82,7 @@ where
 use super::trace::ButtonTrace;
 
 #[cfg(feature = "ui_debug")]
-use super::ButtonAction;
-#[cfg(feature = "ui_debug")]
-use heapless::String;
+use crate::strutil::ShortString;
 
 #[cfg(feature = "ui_debug")]
 impl<T, U> ButtonTrace for ShowMore<T, U>
@@ -92,12 +90,16 @@ where
     T: crate::trace::Trace + Component,
     U: StringType,
 {
-    fn get_btn_action(&self, pos: ButtonPos) -> String<25> {
-        match pos {
-            ButtonPos::Left => ButtonAction::Cancel.string(),
-            ButtonPos::Middle => ButtonAction::Confirm.string(),
-            ButtonPos::Right => ButtonAction::Action("INFO").string(),
-        }
+    fn get_left_action(&self) -> ShortString {
+        "Cancel".into()
+    }
+
+    fn get_middle_action(&self) -> ShortString {
+        "Confirm".into()
+    }
+
+    fn get_right_action(&self) -> ShortString {
+        "Info".into()
     }
 }
 

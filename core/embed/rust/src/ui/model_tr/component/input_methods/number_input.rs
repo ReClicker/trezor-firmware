@@ -79,24 +79,29 @@ impl Component for NumberInput {
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-use super::super::{trace::ButtonTrace, ButtonAction, ButtonPos};
+use super::super::trace::ButtonTrace;
+
+#[cfg(feature = "ui_debug")]
+use crate::strutil::ShortString;
 
 #[cfg(feature = "ui_debug")]
 impl ButtonTrace for NumberInput {
-    fn get_btn_action(&self, pos: ButtonPos) -> String<25> {
-        match pos {
-            ButtonPos::Left => match self.choice_page.has_previous_choice() {
-                true => ButtonAction::PrevPage.string(),
-                false => ButtonAction::empty(),
-            },
-            ButtonPos::Right => match self.choice_page.has_next_choice() {
-                true => ButtonAction::NextPage.string(),
-                false => ButtonAction::empty(),
-            },
-            ButtonPos::Middle => {
-                let current = self.choice_page.get_current_choice();
-                ButtonAction::select_item(inttostr!(current.1))
-            }
+    fn get_left_action(&self) -> ShortString {
+        match self.choice_page.has_previous_choice() {
+            true => "Prev".into(),
+            false => "None".into(),
+        }
+    }
+
+    fn get_middle_action(&self) -> ShortString {
+        let current = self.choice_page.get_current_choice();
+        inttostr!(current.1).into()
+    }
+
+    fn get_right_action(&self) -> ShortString {
+        match self.choice_page.has_previous_choice() {
+            true => "Next".into(),
+            false => "None".into(),
         }
     }
 }

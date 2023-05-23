@@ -1,7 +1,12 @@
+use heapless::String;
+
 /// A trait for types that can be converted to a string.
 pub trait StringType: AsRef<str> + Clone + From<&'static str> {}
 
 impl<T> StringType for T where T: AsRef<str> + Clone + From<&'static str> {}
+
+/// Unified-length String type, long enough for most simple use-cases.
+pub type ShortString = String<50>;
 
 pub fn hexlify(data: &[u8], buffer: &mut [u8]) {
     const HEX_LOWER: [u8; 16] = *b"0123456789abcdef";

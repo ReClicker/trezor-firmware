@@ -93,10 +93,7 @@ impl ChoiceFactory for ChoiceFactoryWordlist {
                 .nth(choice_index - 1)
                 .unwrap_or_default();
             (
-                ChoiceItem::new(
-                    char_to_string::<1>(letter),
-                    ButtonLayout::default_three_icons(),
-                ),
+                ChoiceItem::new(char_to_string(letter), ButtonLayout::default_three_icons()),
                 WordlistAction::Letter(letter),
             )
         }
@@ -198,19 +195,16 @@ impl Component for WordlistEntry {
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-use super::super::{trace::ButtonTrace, ButtonAction, ButtonPos};
+use super::super::trace::ButtonTrace;
+
+#[cfg(feature = "ui_debug")]
+use crate::strutil::ShortString;
 
 #[cfg(feature = "ui_debug")]
 impl ButtonTrace for WordlistEntry {
-    fn get_btn_action(&self, pos: ButtonPos) -> String<25> {
-        match pos {
-            ButtonPos::Left => ButtonAction::PrevPage.string(),
-            ButtonPos::Right => ButtonAction::NextPage.string(),
-            ButtonPos::Middle => {
-                let current = self.choice_page.get_current_choice();
-                ButtonAction::select_item(current.0.content())
-            }
-        }
+    fn get_middle_action(&self) -> ShortString {
+        let current = self.choice_page.get_current_choice();
+        current.0.content().into()
     }
 }
 
