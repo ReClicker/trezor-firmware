@@ -28,6 +28,7 @@ sbu = []
 sd_card = []
 rgb_led = []
 test = [
+    "button",
     "cc",
     "glob",
     "micropython",
