@@ -11,7 +11,6 @@ use crate::{
 use super::super::{
     theme, ButtonDetails, ButtonLayout, ChangingTextLine, ChoiceFactory, ChoiceItem, ChoicePage,
 };
-use core::marker::PhantomData;
 use heapless::String;
 
 pub enum PinEntryMsg {
@@ -30,9 +29,6 @@ enum PinAction {
 const MAX_PIN_LENGTH: usize = 50;
 
 const CHOICE_LENGTH: usize = 13;
-const DELETE_INDEX: usize = 0;
-const SHOW_INDEX: usize = 1;
-const ENTER_INDEX: usize = 2;
 const NUMBER_START_INDEX: usize = 3;
 const CHOICES: [(&str, PinAction, Option<&'static [u8]>); CHOICE_LENGTH] = [
     ("DELETE", PinAction::Delete, Some(theme::ICON_DELETE)),
@@ -250,12 +246,11 @@ where
             ButtonPos::Left => ButtonAction::PrevPage.string(),
             ButtonPos::Right => ButtonAction::NextPage.string(),
             ButtonPos::Middle => {
-                let current_index = self.choice_page.page_index();
-                match current_index {
-                    DELETE_INDEX => ButtonAction::Action("DELETE").string(),
-                    SHOW_INDEX => ButtonAction::Action("SHOW").string(),
-                    ENTER_INDEX => ButtonAction::Action("ENTER").string(),
-                    _ => ButtonAction::select_item(CHOICES[current_index].0),
+                let page_index = self.choice_page.page_index();
+                let (text, action, _) = CHOICES[page_index];
+                match action {
+                    PinAction::Digit(_) => ButtonAction::select_item(text),
+                    _ => ButtonAction::Action(text).string(),
                 }
             }
         }

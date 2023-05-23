@@ -1,8 +1,6 @@
 use crate::ui::{
     component::{Child, Component, Event, EventCtx, Pad},
     geometry::{Offset, Rect},
-    maybe_trace::MaybeTrace,
-    strutil::StringType,
 };
 
 use super::{
@@ -13,10 +11,7 @@ use super::{
 const DEFAULT_ITEMS_DISTANCE: i16 = 10;
 const DEFAULT_Y_BASELINE: i16 = 20;
 
-pub trait Choice<T>
-where
-    T: StringType,
-{
+pub trait Choice {
     fn paint_center(&self, area: Rect, inverse: bool);
     fn width_center(&self) -> i16;
 
@@ -63,9 +58,12 @@ where
 {
     choices: F,
     pad: Pad,
+    buttons: Child<ButtonController<&'static str>>,
     page_counter: usize,
     /// How many pixels from top should we render the items.
+    y_baseline: i16,
     /// How many pixels are between the items.
+    items_distance: i16,
     /// Whether the choice page is "infinite" (carousel).
     is_carousel: bool,
     /// Whether we should show items on left/right even when they cannot
@@ -103,7 +101,7 @@ where
     /// Need to update the initial button layout.
     pub fn with_initial_page_counter(mut self, page_counter: usize) -> Self {
         self.page_counter = page_counter;
-        let initial_btn_layout = self.choices.get(page_counter).0.btn_layout();
+        let initial_btn_layout = self.get_current_choice().0.btn_layout();
         self.buttons = Child::new(ButtonController::new(initial_btn_layout));
         self
     }
@@ -178,7 +176,7 @@ where
         }
 
         // Getting the remaining left and right areas.
-        let center_width = self.choices.get(self.page_counter).0.width_center();
+        let center_width = self.get_current_choice().0.width_center();
         let (left_area, _center_area, right_area) = available_area.split_center(center_width);
 
         // Possibly drawing on the left side.
@@ -219,10 +217,14 @@ where
         self.page_counter < self.last_page_index()
     }
 
+    /// Getting the choice on the current index
+    pub fn get_current_choice(&self) -> (ChoiceItem, A) {
+        self.choices.get(self.page_counter)
+    }
+
     /// Display the current choice in the middle.
     fn show_current_choice(&mut self, area: Rect) {
-        self.choices
-            .get(self.page_counter)
+        self.get_current_choice()
             .0
             .paint_center(area, self.inverse_selected_item);
 
@@ -235,7 +237,7 @@ where
     /// Display all the choices fitting on the left side.
     /// Going as far as possible.
     fn show_left_choices(&self, area: Rect) {
-        // page index can get negative here, so having it as i16 instead of usize
+        // NOTE: page index can get negative here, so having it as i16 instead of usize
         let mut page_index = self.page_counter as i16 - 1;
         let mut current_area = area.split_right(self.items_distance).0;
         while current_area.width() > 0 {
@@ -271,18 +273,6 @@ where
                 .split_right(choice_width + self.items_distance)
                 .0;
             page_index -= 1;
-
-            // if let Some(width) = self
-            //     .choices
-            //     .get(page_index as usize)
-            //     .paint_left(current_area, self.show_incomplete)
-            // {
-            //     // Updating loop variables.
-            //     x_offset += width + self.items_distance;
-            //     page_index -= 1;
-            // } else {
-            //     break;
-            // }
         }
     }
 
@@ -325,21 +315,6 @@ where
                 .split_left(choice_width + self.items_distance)
                 .1;
             page_index += 1;
-
-            // let current_area = area.split_left(x_offset +
-            // self.items_distance).1;
-
-            // if let Some(width) = self
-            //     .choices
-            //     .get(page_index)
-            //     .paint_right(current_area, self.show_incomplete)
-            // {
-            //     // Updating loop variables.
-            //     x_offset += width + self.items_distance;
-            //     page_index += 1;
-            // } else {
-            //     break;
-            // }
         }
     }
 
@@ -373,7 +348,7 @@ where
     /// If defined in the current choice, setting their text,
     /// whether they are long-pressed, and painting them.
     fn set_buttons(&mut self, ctx: &mut EventCtx) {
-        let btn_layout = self.choices.get(self.page_counter).0.btn_layout();
+        let btn_layout = self.get_current_choice().0.btn_layout();
         self.buttons.mutate(ctx, |_ctx, buttons| {
             buttons.set(btn_layout);
         });
@@ -424,7 +399,7 @@ where
                 ButtonPos::Middle => {
                     // Clicked SELECT. Send current choice index
                     self.clear_and_repaint(ctx);
-                    return Some(self.choices.get(self.page_counter).1);
+                    return Some(self.get_current_choice().1);
                 }
             }
         };

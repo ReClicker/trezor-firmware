@@ -46,7 +46,7 @@ use super::{
     component::{
         AddressDetails, AddressDetailsMsg, ButtonActions, ButtonDetails, ButtonLayout, ButtonPage,
         CancelInfoConfirmMsg, CoinJoinProgress, Flow, FlowMsg, FlowPages, Frame, Homescreen,
-        HomescreenMsg, Lockscreen, NoBtnDialog, NoBtnDialogMsg, NumberInput, Page, PassphraseEntry,
+        HomescreenMsg, Lockscreen, NoBtnDialog, NumberInput, Page, PassphraseEntry,
         PassphraseEntryMsg, PinEntry, PinEntryMsg, Progress, ScrollableContent, ScrollableFrame,
         ShareWords, ShowMore, SimpleChoice, WelcomeScreen, WordlistEntry, WordlistType,
     },
@@ -165,28 +165,33 @@ where
     }
 }
 
-impl<T> ComponentMsgObj for NumberInput<T>
-where
-    T: StringType,
-{
+impl ComponentMsgObj for NumberInput {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         msg.try_into()
     }
 }
 
-impl<T> ComponentMsgObj for WordlistEntry<T>
+impl<T> ComponentMsgObj for SimpleChoice<T>
 where
     T: StringType,
 {
+    fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
+        if self.return_index {
+            msg.try_into()
+        } else {
+            let text = self.result_by_index(msg);
+            text.try_into()
+        }
+    }
+}
+
+impl ComponentMsgObj for WordlistEntry {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         msg.try_into()
     }
 }
 
-impl<T> ComponentMsgObj for PassphraseEntry<T>
-where
-    T: StringType,
-{
+impl ComponentMsgObj for PassphraseEntry {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
             PassphraseEntryMsg::Confirmed => self.passphrase().try_into(),
@@ -963,9 +968,7 @@ extern "C" fn new_request_passphrase(n_args: usize, args: *const Obj, kwargs: *m
     let block = |_args: &[Obj], kwargs: &Map| {
         let prompt: StrBuffer = kwargs.get(Qstr::MP_QSTR_prompt)?.try_into()?;
 
-        let obj = LayoutObj::new(
-            Frame::new(prompt, PassphraseEntry::<StrBuffer>::new()).with_title_centered(),
-        )?;
+        let obj = LayoutObj::new(Frame::new(prompt, PassphraseEntry::new()).with_title_centered())?;
         Ok(obj.into())
     };
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
@@ -976,8 +979,7 @@ extern "C" fn new_request_bip39(n_args: usize, args: *const Obj, kwargs: *mut Ma
         let prompt: StrBuffer = kwargs.get(Qstr::MP_QSTR_prompt)?.try_into()?;
 
         let obj = LayoutObj::new(
-            Frame::new(prompt, WordlistEntry::<StrBuffer>::new(WordlistType::Bip39))
-                .with_title_centered(),
+            Frame::new(prompt, WordlistEntry::new(WordlistType::Bip39)).with_title_centered(),
         )?;
         Ok(obj.into())
     };
@@ -989,11 +991,7 @@ extern "C" fn new_request_slip39(n_args: usize, args: *const Obj, kwargs: *mut M
         let prompt: StrBuffer = kwargs.get(Qstr::MP_QSTR_prompt)?.try_into()?;
 
         let obj = LayoutObj::new(
-            Frame::new(
-                prompt,
-                WordlistEntry::<StrBuffer>::new(WordlistType::Slip39),
-            )
-            .with_title_centered(),
+            Frame::new(prompt, WordlistEntry::new(WordlistType::Slip39)).with_title_centered(),
         )?;
         Ok(obj.into())
     };
@@ -1050,11 +1048,7 @@ extern "C" fn new_request_number(n_args: usize, args: *const Obj, kwargs: *mut M
         let count: u32 = kwargs.get(Qstr::MP_QSTR_count)?.try_into()?;
 
         let obj = LayoutObj::new(
-            Frame::new(
-                title,
-                NumberInput::<StrBuffer>::new(min_count, max_count, count),
-            )
-            .with_title_centered(),
+            Frame::new(title, NumberInput::new(min_count, max_count, count)).with_title_centered(),
         )?;
         Ok(obj.into())
     };

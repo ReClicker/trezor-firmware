@@ -2,11 +2,9 @@ use crate::ui::{
     component::{text::common::TextBox, Child, Component, ComponentExt, Event, EventCtx},
     display::Icon,
     geometry::Rect,
-    strutil::StringType,
     util::char_to_string,
 };
 
-use core::marker::PhantomData;
 use heapless::String;
 
 use super::super::{
@@ -141,22 +139,17 @@ fn is_menu_choice(current_category: &ChoiceCategory, page_index: usize) -> bool 
     page_index == category_length
 }
 
-struct ChoiceFactoryPassphrase<T> {
+struct ChoiceFactoryPassphrase {
     current_category: ChoiceCategory,
     /// Used to either show DELETE or CANCEL
     is_empty: bool,
-    _phantom: PhantomData<T>,
 }
 
-impl<T> ChoiceFactoryPassphrase<T>
-where
-    T: StringType,
-{
+impl ChoiceFactoryPassphrase {
     fn new(current_category: ChoiceCategory, is_empty: bool) -> Self {
         Self {
             current_category,
             is_empty,
-            _phantom: PhantomData,
         }
     }
 
@@ -236,10 +229,7 @@ pub struct PassphraseEntry {
     menu_position: usize, // position in the menu so we can return back
 }
 
-impl<T> PassphraseEntry<T>
-where
-    T: StringType,
-{
+impl PassphraseEntry {
     pub fn new() -> Self {
         Self {
             choice_page: ChoicePage::new(ChoiceFactoryPassphrase::new(ChoiceCategory::Menu, true))
@@ -304,10 +294,7 @@ where
     }
 }
 
-impl<T> Component for PassphraseEntry<T>
-where
-    T: StringType,
-{
+impl Component for PassphraseEntry {
     type Msg = PassphraseEntryMsg;
 
     fn place(&mut self, bounds: Rect) -> Rect {
@@ -397,10 +384,7 @@ impl ChoiceCategory {
 }
 
 #[cfg(feature = "ui_debug")]
-impl<T> ButtonTrace for PassphraseEntry<T>
-where
-    T: StringType,
-{
+impl ButtonTrace for PassphraseEntry {
     fn get_btn_action(&self, pos: ButtonPos) -> String<25> {
         match pos {
             ButtonPos::Left => ButtonAction::PrevPage.string(),
@@ -426,10 +410,7 @@ where
 }
 
 #[cfg(feature = "ui_debug")]
-impl<T> crate::trace::Trace for PassphraseEntry<T>
-where
-    T: StringType,
-{
+impl crate::trace::Trace for PassphraseEntry {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("PassphraseKeyboard");
         t.string("passphrase", self.textbox.content());

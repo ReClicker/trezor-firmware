@@ -1,7 +1,6 @@
 use crate::ui::{
     display::{self, rect_fill, rect_fill_corners, rect_outline_rounded, Font, Icon},
     geometry::{Offset, Rect, BOTTOM_LEFT},
-    strutil::StringType,
 };
 
 use heapless::String;
@@ -13,73 +12,14 @@ const STRING_LEN: usize = 50;
 
 /// Simple string component used as a choice item.
 #[derive(Clone)]
-pub struct ChoiceItem<T>
-where
-    T: StringType,
-{
+pub struct ChoiceItem {
     text: String<STRING_LEN>,
     icon: Option<Icon>,
     btn_layout: ButtonLayout<&'static str>,
     font: Font,
 }
 
-pub fn paint_rounded_highlight(area: Rect, size: Offset, inverse: bool) {
-    let bound = theme::BUTTON_OUTLINE;
-    let left_bottom = area.bottom_center() + Offset::new(-size.x / 2 - bound, bound + 1);
-    let x_size = size.x + 2 * bound;
-    let y_size = size.y + 2 * bound;
-    let outline_size = Offset::new(x_size, y_size);
-    let outline = Rect::from_bottom_left_and_size(left_bottom, outline_size);
-    if inverse {
-        rect_fill(outline, theme::FG);
-        rect_fill_corners(outline, theme::BG);
-    } else {
-        rect_outline_rounded(outline, theme::FG, theme::BG, 1);
-    }
-}
-
-pub fn text_icon_width(text: Option<&str>, icon: Option<Icon>, font: Font) -> i16 {
-    match (text, icon) {
-        (Some(text), Some(icon)) => {
-            icon.toif.width() + ICON_RIGHT_PADDING + font.visible_text_width(text)
-        }
-        (Some(text), None) => font.visible_text_width(text),
-        (None, Some(icon)) => icon.toif.width(),
-        (None, None) => 0,
-    }
-}
-
-pub fn paint_text_icon(
-    area: Rect,
-    width: i16,
-    text: Option<&str>,
-    icon: Option<Icon>,
-    font: Font,
-    inverse: bool,
-) {
-    let fg_color = if inverse { theme::BG } else { theme::FG };
-    let bg_color = if inverse { theme::FG } else { theme::BG };
-
-    let mut baseline = area.bottom_center() - Offset::x(width / 2);
-    if let Some(icon) = icon {
-        let height_diff = font.text_height() - icon.toif.height();
-        let vertical_offset = Offset::y(-height_diff / 2);
-        icon.draw(baseline + vertical_offset, BOTTOM_LEFT, fg_color, bg_color);
-        baseline = baseline + Offset::x(icon.toif.width() + ICON_RIGHT_PADDING);
-    }
-
-    if let Some(text) = text {
-        // Possibly shifting the baseline left, when there is a text bearing.
-        // This is to center the text properly.
-        baseline = baseline - Offset::x(font.start_x_bearing(text));
-        display::text_left(baseline, text, font, fg_color, bg_color);
-    }
-}
-
-impl<T> ChoiceItem<T>
-where
-    T: StringType,
-{
+impl ChoiceItem {
     pub fn new<T: AsRef<str>>(text: T, btn_layout: ButtonLayout<&'static str>) -> Self {
         Self {
             text: String::from(text.as_ref()),
@@ -128,12 +68,13 @@ where
             Some(self.text.as_ref())
         }
     }
+
+    pub fn content(&self) -> &str {
+        self.text.as_ref()
+    }
 }
 
-impl<T> Choice<T> for ChoiceItem<T>
-where
-    T: StringType,
-{
+impl Choice for ChoiceItem {
     /// Painting the item as the main choice in the middle.
     /// Showing both the icon and text, if the icon is available.
     fn paint_center(&self, area: Rect, inverse: bool) {
@@ -173,13 +114,63 @@ where
     }
 }
 
+fn paint_rounded_highlight(area: Rect, size: Offset, inverse: bool) {
+    let bound = theme::BUTTON_OUTLINE;
+    let left_bottom = area.bottom_center() + Offset::new(-size.x / 2 - bound, bound + 1);
+    let x_size = size.x + 2 * bound;
+    let y_size = size.y + 2 * bound;
+    let outline_size = Offset::new(x_size, y_size);
+    let outline = Rect::from_bottom_left_and_size(left_bottom, outline_size);
+    if inverse {
+        rect_fill(outline, theme::FG);
+        rect_fill_corners(outline, theme::BG);
+    } else {
+        rect_outline_rounded(outline, theme::FG, theme::BG, 1);
+    }
+}
+
+fn text_icon_width(text: Option<&str>, icon: Option<Icon>, font: Font) -> i16 {
+    match (text, icon) {
+        (Some(text), Some(icon)) => {
+            icon.toif.width() + ICON_RIGHT_PADDING + font.visible_text_width(text)
+        }
+        (Some(text), None) => font.visible_text_width(text),
+        (None, Some(icon)) => icon.toif.width(),
+        (None, None) => 0,
+    }
+}
+
+fn paint_text_icon(
+    area: Rect,
+    width: i16,
+    text: Option<&str>,
+    icon: Option<Icon>,
+    font: Font,
+    inverse: bool,
+) {
+    let fg_color = if inverse { theme::BG } else { theme::FG };
+    let bg_color = if inverse { theme::FG } else { theme::BG };
+
+    let mut baseline = area.bottom_center() - Offset::x(width / 2);
+    if let Some(icon) = icon {
+        let height_diff = font.text_height() - icon.toif.height();
+        let vertical_offset = Offset::y(-height_diff / 2);
+        icon.draw(baseline + vertical_offset, BOTTOM_LEFT, fg_color, bg_color);
+        baseline = baseline + Offset::x(icon.toif.width() + ICON_RIGHT_PADDING);
+    }
+
+    if let Some(text) = text {
+        // Possibly shifting the baseline left, when there is a text bearing.
+        // This is to center the text properly.
+        baseline = baseline - Offset::x(font.start_x_bearing(text));
+        display::text_left(baseline, text, font, fg_color, bg_color);
+    }
+}
+
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-impl<T> crate::trace::Trace for ChoiceItem<T>
-where
-    T: StringType,
-{
+impl crate::trace::Trace for ChoiceItem {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ChoiceItem");
         t.string("content", self.text.as_ref());

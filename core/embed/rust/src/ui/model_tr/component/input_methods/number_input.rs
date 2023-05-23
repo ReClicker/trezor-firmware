@@ -1,9 +1,6 @@
-use crate::{
-    strutil::StringType,
-    ui::{
-        component::{Component, Event, EventCtx},
-        geometry::Rect,
-    },
+use crate::ui::{
+    component::{Component, Event, EventCtx},
+    geometry::Rect,
 };
 
 use super::super::{ButtonLayout, ChoiceFactory, ChoiceItem, ChoicePage};
@@ -31,8 +28,13 @@ impl ChoiceFactory for ChoiceFactoryNumberInput {
         let num = self.min + choice_index as u32;
         let text: String<10> = String::from(num);
         let mut choice_item = ChoiceItem::new(text, ButtonLayout::default_three_icons());
-        if choice_index == 0 {}
-        if choice_index == <ChoiceFactoryNumberInput as ChoiceFactory<T>>::count(self) - 1 {
+
+        // Disabling prev/next buttons for the first/last choice.
+        // (could be done to the same button if there is only one)
+        if choice_index == 0 {
+            choice_item.set_left_btn(None);
+        }
+        if choice_index == self.count() - 1 {
             choice_item.set_right_btn(None);
         }
 
@@ -47,10 +49,7 @@ pub struct NumberInput {
     min: u32,
 }
 
-impl<T> NumberInput<T>
-where
-    T: StringType,
-{
+impl NumberInput {
     pub fn new(min: u32, max: u32, init_value: u32) -> Self {
         let choices = ChoiceFactoryNumberInput::new(min, max);
         let initial_page = init_value - min;
@@ -83,10 +82,7 @@ impl Component for NumberInput {
 use super::super::{trace::ButtonTrace, ButtonAction, ButtonPos};
 
 #[cfg(feature = "ui_debug")]
-impl<T> ButtonTrace for NumberInput<T>
-where
-    T: StringType,
-{
+impl ButtonTrace for NumberInput {
     fn get_btn_action(&self, pos: ButtonPos) -> String<25> {
         match pos {
             ButtonPos::Left => match self.choice_page.has_previous_choice() {
@@ -98,19 +94,15 @@ where
                 false => ButtonAction::empty(),
             },
             ButtonPos::Middle => {
-                let current_index = self.choice_page.page_index();
-                let current_num = self.min + current_index as u32;
-                ButtonAction::select_item(inttostr!(current_num))
+                let current = self.choice_page.get_current_choice();
+                ButtonAction::select_item(inttostr!(current.1))
             }
         }
     }
 }
 
 #[cfg(feature = "ui_debug")]
-impl<T> crate::trace::Trace for NumberInput<T>
-where
-    T: StringType,
-{
+impl crate::trace::Trace for NumberInput {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("NumberInput");
         self.report_btn_actions(t);

@@ -1,5 +1,4 @@
 use crate::{
-    strutil::StringType,
     trezorhal::wordlist::Wordlist,
     ui::{
         component::{text::common::TextBox, Child, Component, ComponentExt, Event, EventCtx},
@@ -114,10 +113,7 @@ pub struct WordlistEntry {
     wordlist_type: WordlistType,
 }
 
-impl<T> WordlistEntry<T>
-where
-    T: StringType,
-{
+impl WordlistEntry {
     pub fn new(wordlist_type: WordlistType) -> Self {
         let choices = ChoiceFactoryWordlist::new(wordlist_type, "");
         Self {
@@ -203,42 +199,23 @@ impl Component for WordlistEntry {
 
 #[cfg(feature = "ui_debug")]
 use super::super::{trace::ButtonTrace, ButtonAction, ButtonPos};
-#[cfg(feature = "ui_debug")]
-use crate::ui::util;
 
 #[cfg(feature = "ui_debug")]
-impl<T> ButtonTrace for WordlistEntry<T>
-where
-    T: StringType,
-{
+impl ButtonTrace for WordlistEntry {
     fn get_btn_action(&self, pos: ButtonPos) -> String<25> {
         match pos {
             ButtonPos::Left => ButtonAction::PrevPage.string(),
             ButtonPos::Right => ButtonAction::NextPage.string(),
             ButtonPos::Middle => {
-                let current_index = self.choice_page.page_index();
-                let choice: String<10> = if current_index == DELETE_INDEX {
-                    String::from("DELETE")
-                } else {
-                    // let index = current_index - 1;
-                    // if self.offer_words {
-                    //     self.wordlist.get(index).unwrap_or_default().into()
-                    // } else {
-                    //     util::char_to_string(self.letter_choices[index])
-                    // }
-                    String::from("TODO")
-                };
-                ButtonAction::select_item(choice)
+                let current = self.choice_page.get_current_choice();
+                ButtonAction::select_item(current.0.content())
             }
         }
     }
 }
 
 #[cfg(feature = "ui_debug")]
-impl<T> crate::trace::Trace for WordlistEntry<T>
-where
-    T: StringType,
-{
+impl crate::trace::Trace for WordlistEntry {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         match self.wordlist_type {
             WordlistType::Bip39 => t.component("Bip39Entry"),
@@ -248,19 +225,11 @@ where
 
         self.report_btn_actions(t);
 
-        // if self.offer_words {
-        //     t.in_list("word_choices", &|list_t| {
-        //         for word in self.wordlist.iter() {
-        //             list_t.string(word);
-        //         }
-        //     });
-        // } else {
-        //     t.in_list("letter_choices", &|list_t| {
-        //         for ch in &self.letter_choices {
-        //             list_t.string(&util::char_to_string::<1>(*ch));
-        //         }
-        //     });
-        // }
+        if self.offer_words {
+            t.bool("word_choices", true);
+        } else {
+            t.bool("letter_choices", true);
+        }
 
         t.child("choice_page", &self.choice_page);
     }

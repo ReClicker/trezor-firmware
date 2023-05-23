@@ -1,15 +1,12 @@
 use crate::{
-    error::Error,
-    micropython::obj::Obj,
     strutil::StringType,
     ui::{
         component::{Component, Event, EventCtx},
         geometry::Rect,
-        layout::obj::ComponentMsgObj,
     },
 };
 
-use super::super::{ButtonLayout, ChoiceFactory, ChoiceItem, ChoicePage, ChoicePageMsg};
+use super::super::{ButtonLayout, ChoiceFactory, ChoiceItem, ChoicePage};
 use heapless::Vec;
 
 // So that there is only one implementation, and not multiple generic ones
@@ -27,7 +24,7 @@ impl<T> ChoiceFactorySimple<T> {
     }
 }
 
-impl<T> ChoiceFactory<T> for ChoiceFactorySimple<T>
+impl<T> ChoiceFactory for ChoiceFactorySimple<T>
 where
     T: StringType,
 {
@@ -63,8 +60,8 @@ where
     T: StringType,
 {
     choices: Vec<T, MAX_LENGTH>,
-    choice_page: ChoicePage<ChoiceFactorySimple<T>, T>,
-    return_index: bool,
+    choice_page: ChoicePage<ChoiceFactorySimple<T>, usize>,
+    pub return_index: bool,
 }
 
 impl<T> SimpleChoice<T>
@@ -120,19 +117,6 @@ where
 
     fn paint(&mut self) {
         self.choice_page.paint();
-    }
-}
-
-// XXX this would usually be in `layout.rs` to avoid micropython dependency,
-// but SimpleChoice already depends on micropython due to StrBuffer usage
-impl<const N: usize> ComponentMsgObj for SimpleChoice<N> {
-    fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
-        if self.return_index {
-            msg.try_into()
-        } else {
-            let text = self.choices[msg].as_ref();
-            text.try_into()
-        }
     }
 }
 
