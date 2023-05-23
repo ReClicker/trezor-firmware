@@ -352,8 +352,6 @@ def input_flow_skip(client: Client, cancel: bool = False):
 
 
 def input_flow_scroll_down(client: Client, cancel: bool = False):
-    if client.features.model == "R":
-        pytest.skip("Freezes")
     return InputFlowEthereumSignTxScrollDown(client, cancel).get()
 
 

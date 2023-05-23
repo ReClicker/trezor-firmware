@@ -660,29 +660,21 @@ class InputFlowEthereumSignTxScrollDown(InputFlowBase):
         yield  # confirm address
         self.debug.wait_layout()
         self.debug.press_yes()
-        yield  # confirm amount
-        self.debug.wait_layout()
-        self.debug.swipe_up()
-        self.debug.press_yes()
 
         br = yield  # paginated data
         assert br.pages is not None
-        for i in range(br.pages):
+        for _ in range(br.pages):
             self.debug.wait_layout()
-            if i < br.pages - 1:
-                self.debug.swipe_up()
+            self.debug.swipe_up()
 
+        yield  # confirm amount
+        self.debug.wait_layout()
         self.debug.press_yes()
-        yield  # confirm data
+
+        yield  # confirm before send
         if self.cancel:
             self.debug.press_no()
         else:
-            self.debug.press_yes()
-            yield  # gas price
-            self.debug.press_yes()
-            yield  # maximum fee
-            self.debug.press_yes()
-            yield  # hold to confirm
             self.debug.press_yes()
 
 
