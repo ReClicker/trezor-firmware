@@ -38,7 +38,7 @@ impl Component for WelcomeScreen {
     }
 
     fn paint(&mut self) {
-        Icon::new(theme::ICON_LOGO).draw(
+        theme::ICON_LOGO.draw(
             self.area.top_center() + Offset::y(ICON_TOP_MARGIN),
             geometry::TOP_CENTER,
             theme::FG,

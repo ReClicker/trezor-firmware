@@ -1,7 +1,7 @@
 use crate::ui::{
     component::{Component, Event, EventCtx, Never},
     constant::MODEL_NAME,
-    display::{self, Icon},
+    display,
     geometry::{self, Offset, Rect},
 };
 
@@ -41,7 +41,7 @@ impl Component for WelcomeScreen {
             theme::FG,
             theme::BG,
         );
-        Icon::new(theme::ICON_LOGO).draw(
+        theme::ICON_LOGO.draw(
             self.area.top_center() + Offset::y(ICON_TOP_MARGIN),
             geometry::TOP_CENTER,
             theme::FG,

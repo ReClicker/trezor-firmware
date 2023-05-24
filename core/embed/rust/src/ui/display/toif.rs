@@ -227,6 +227,8 @@ impl<'i> Toif<'i> {
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct Icon {
     pub toif: Toif<'static>,
+    #[cfg(feature = "ui_debug")]
+    pub name: &'static str,
 }
 
 impl Icon {
@@ -236,7 +238,21 @@ impl Icon {
             None => panic!("Invalid image."),
         };
         assert!(matches!(toif.format(), ToifFormat::GrayScaleEH));
-        Self { toif }
+        Self {
+            toif,
+            #[cfg(feature = "ui_debug")]
+            name: "<unnamed>",
+        }
+    }
+
+    /// Create a named icon.
+    /// The name is only stored in debug builds.
+    pub const fn debug_named(data: &'static [u8], name: &'static str) -> Self {
+        Self {
+            #[cfg(feature = "ui_debug")]
+            name,
+            ..Self::new(data)
+        }
     }
 
     /// Display the icon with baseline Point, aligned according to the

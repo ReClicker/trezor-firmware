@@ -432,36 +432,19 @@ where
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-use super::ButtonContent;
-
-#[cfg(feature = "ui_debug")]
-impl<T> crate::trace::Trace for ButtonContainer<T>
-where
-    T: StringType + Clone,
+impl<T: StringType> crate::trace::Trace for ButtonContainer<T>
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
-        t.component("Button");
-
         if let ButtonType::Button(btn) = &self.button_type {
-            match btn.content() {
-                ButtonContent::Text(text) => {
-                    t.string("text", text.as_ref());
-                }
-                ButtonContent::Icon(_cursor) => {
-                    t.bool("icon", true);
-                }
-            }
+            btn.trace(t);
         } else if let ButtonType::HoldToConfirm(htc) = &self.button_type {
-            t.string("text", htc.get_text().as_ref());
-            t.int("htc_ms", htc.get_duration().to_millis() as i64);
+            htc.trace(t);
         }
     }
 }
 
 #[cfg(feature = "ui_debug")]
-impl<T> crate::trace::Trace for ButtonController<T>
-where
-    T: StringType + Clone,
+impl<T: StringType> crate::trace::Trace for ButtonController<T>
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ButtonController");

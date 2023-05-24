@@ -3,7 +3,7 @@ use crate::{
     trezorhal::usb::usb_configured,
     ui::{
         component::{Child, Component, Event, EventCtx, Label},
-        display::{rect_fill, toif::Toif, Font, Icon},
+        display::{rect_fill, toif::Toif, Font},
         event::USBEvent,
         geometry::{self, Offset, Point, Rect},
         layout::util::get_user_custom_image,
@@ -57,7 +57,7 @@ where
             let toif_data = unwrap!(Toif::new(user_custom_image.as_ref()));
             toif_data.draw(TOP_CENTER, geometry::TOP_CENTER, theme::FG, theme::BG);
         } else {
-            Icon::new(theme::ICON_LOGO).draw(
+            theme::ICON_LOGO.draw(
                 TOP_CENTER + Offset::y(LOGO_ICON_TOP_MARGIN),
                 geometry::TOP_CENTER,
                 theme::FG,
@@ -86,7 +86,7 @@ where
     }
 
     fn paint_warning_icons_in_top_corners(&self) {
-        let warning_icon = Icon::new(theme::ICON_WARNING);
+        let warning_icon = theme::ICON_WARNING;
         warning_icon.draw(AREA.top_left(), geometry::TOP_LEFT, theme::FG, theme::BG);
         // Needs x+1 Offset to compensate for empty right column (icon needs to be
         // even-wide)
@@ -184,7 +184,7 @@ where
     }
 
     fn paint(&mut self) {
-        Icon::new(theme::ICON_LOCK).draw(
+        theme::ICON_LOCK.draw(
             TOP_CENTER + Offset::y(LOCK_ICON_TOP_MARGIN),
             geometry::TOP_CENTER,
             theme::FG,

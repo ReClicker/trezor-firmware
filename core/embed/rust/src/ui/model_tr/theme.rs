@@ -25,12 +25,12 @@ pub const TEXT_NORMAL: TextStyle = TextStyle::new(Font::NORMAL, FG, BG, FG, FG);
 pub const TEXT_DEMIBOLD: TextStyle = TextStyle::new(Font::DEMIBOLD, FG, BG, FG, FG);
 pub const TEXT_BOLD: TextStyle = TextStyle::new(Font::BOLD, FG, BG, FG, FG)
     .with_page_breaking(PageBreaking::CutAndInsertEllipsisBoth)
-    .with_ellipsis_icon(Icon::new(ICON_NEXT_PAGE), ELLIPSIS_ICON_MARGIN)
-    .with_prev_page_icon(Icon::new(ICON_PREV_PAGE), PREV_PAGE_ICON_MARGIN);
+    .with_ellipsis_icon(ICON_NEXT_PAGE, ELLIPSIS_ICON_MARGIN)
+    .with_prev_page_icon(ICON_PREV_PAGE, PREV_PAGE_ICON_MARGIN);
 pub const TEXT_MONO: TextStyle = TextStyle::new(Font::MONO, FG, BG, FG, FG)
     .with_page_breaking(PageBreaking::CutAndInsertEllipsisBoth)
-    .with_ellipsis_icon(Icon::new(ICON_NEXT_PAGE), ELLIPSIS_ICON_MARGIN)
-    .with_prev_page_icon(Icon::new(ICON_PREV_PAGE), PREV_PAGE_ICON_MARGIN);
+    .with_ellipsis_icon(ICON_NEXT_PAGE, ELLIPSIS_ICON_MARGIN)
+    .with_prev_page_icon(ICON_PREV_PAGE, PREV_PAGE_ICON_MARGIN);
 /// Mono data text does not have hyphens
 pub const TEXT_MONO_DATA: TextStyle =
     TEXT_MONO.with_line_breaking(LineBreaking::BreakWordsNoHyphen);
@@ -48,30 +48,30 @@ pub fn textstyle_number_bold_or_mono(num: i32) -> &'static TextStyle {
 
 // BLD icons
 pub const LOGO_EMPTY: &[u8] = include_res!("model_tr/res/trezor_empty.toif");
-pub const ICON_FAIL: &[u8] = include_res!("model_tr/res/fail.toif");
+include_icon!(ICON_FAIL, "model_tr/res/fail.toif");
 
 // Firmware icons
-pub const ICON_ARM_LEFT: &[u8] = include_res!("model_tr/res/arm_left.toif"); // 6*10
-pub const ICON_ARM_RIGHT: &[u8] = include_res!("model_tr/res/arm_right.toif"); // 6*10
-pub const ICON_ARROW_LEFT: &[u8] = include_res!("model_tr/res/arrow_left.toif"); // 6*10
-pub const ICON_ARROW_RIGHT: &[u8] = include_res!("model_tr/res/arrow_right.toif"); // 6*10
-pub const ICON_ARROW_RIGHT_FAT: &[u8] = include_res!("model_tr/res/arrow_right_fat.toif"); // 4*8
-pub const ICON_ARROW_UP: &[u8] = include_res!("model_tr/res/arrow_up.toif"); // 10*6
-pub const ICON_ARROW_DOWN: &[u8] = include_res!("model_tr/res/arrow_down.toif"); // 10*6
-pub const ICON_ARROW_BACK_UP: &[u8] = include_res!("model_tr/res/arrow_back_up.toif"); // 8*8
-pub const ICON_BIN: &[u8] = include_res!("model_tr/res/bin.toif"); // 10*10
-pub const ICON_CANCEL: &[u8] = include_res!("model_tr/res/cancel_no_outline.toif"); // 8*8
-pub const ICON_DELETE: &[u8] = include_res!("model_tr/res/delete.toif"); // 10*7
-pub const ICON_EYE: &[u8] = include_res!("model_tr/res/eye_round.toif"); // 12*7
-pub const ICON_LOCK: &[u8] = include_res!("model_tr/res/lock.toif"); // 10*10
-pub const ICON_LOGO: &[u8] = include_res!("model_tr/res/logo_22_33.toif"); // 22*33
-pub const ICON_NEXT_PAGE: &[u8] = include_res!("model_tr/res/next_page.toif"); // 10*8
-pub const ICON_PREV_PAGE: &[u8] = include_res!("model_tr/res/prev_page.toif"); // 8*10
-pub const ICON_SPACE: &[u8] = include_res!("model_tr/res/space.toif"); // 12*3
-pub const ICON_SUCCESS: &[u8] = include_res!("model_tr/res/success.toif");
-pub const ICON_TICK: &[u8] = include_res!("model_tr/res/tick.toif"); // 8*6
-pub const ICON_TICK_FAT: &[u8] = include_res!("model_tr/res/tick_fat.toif"); // 8*6
-pub const ICON_WARNING: &[u8] = include_res!("model_tr/res/warning.toif"); // 12*12
+include_icon!(ICON_ARM_LEFT, "model_tr/res/arm_left.toif"); // 6*10
+include_icon!(ICON_ARM_RIGHT, "model_tr/res/arm_right.toif"); // 6*10
+include_icon!(ICON_ARROW_LEFT, "model_tr/res/arrow_left.toif"); // 6*10
+include_icon!(ICON_ARROW_RIGHT, "model_tr/res/arrow_right.toif"); // 6*10
+include_icon!(ICON_ARROW_RIGHT_FAT, "model_tr/res/arrow_right_fat.toif"); // 4*8
+include_icon!(ICON_ARROW_UP, "model_tr/res/arrow_up.toif"); // 10*6
+include_icon!(ICON_ARROW_DOWN, "model_tr/res/arrow_down.toif"); // 10*6
+include_icon!(ICON_ARROW_BACK_UP, "model_tr/res/arrow_back_up.toif"); // 8*8
+include_icon!(ICON_BIN, "model_tr/res/bin.toif"); // 10*10
+include_icon!(ICON_CANCEL, "model_tr/res/cancel_no_outline.toif"); // 8*8
+include_icon!(ICON_DELETE, "model_tr/res/delete.toif"); // 10*7
+include_icon!(ICON_EYE, "model_tr/res/eye_round.toif"); // 12*7
+include_icon!(ICON_LOCK, "model_tr/res/lock.toif"); // 10*10
+include_icon!(ICON_LOGO, "model_tr/res/logo_22_33.toif"); // 22*33
+include_icon!(ICON_NEXT_PAGE, "model_tr/res/next_page.toif"); // 10*8
+include_icon!(ICON_PREV_PAGE, "model_tr/res/prev_page.toif"); // 8*10
+include_icon!(ICON_SPACE, "model_tr/res/space.toif"); // 12*3
+include_icon!(ICON_SUCCESS, "model_tr/res/success.toif");
+include_icon!(ICON_TICK, "model_tr/res/tick.toif"); // 8*6
+include_icon!(ICON_TICK_FAT, "model_tr/res/tick_fat.toif"); // 8*6
+include_icon!(ICON_WARNING, "model_tr/res/warning.toif"); // 12*12
 
 // checklist settings
 pub const CHECKLIST_SPACING: i16 = 5;

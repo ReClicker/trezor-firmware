@@ -72,10 +72,10 @@ where
 
     fn level_to_style(level: u8) -> (Color, Icon) {
         match level {
-            3 => (theme::YELLOW, Icon::new(theme::ICON_COINJOIN)),
-            2 => (theme::VIOLET, Icon::new(theme::ICON_MAGIC)),
-            1 => (theme::YELLOW, Icon::new(theme::ICON_WARN)),
-            _ => (theme::RED, Icon::new(theme::ICON_WARN)),
+            3 => (theme::YELLOW, theme::ICON_COINJOIN),
+            2 => (theme::VIOLET, theme::ICON_MAGIC),
+            1 => (theme::YELLOW, theme::ICON_WARN),
+            _ => (theme::RED, theme::ICON_WARN),
         }
     }
 
@@ -306,7 +306,7 @@ where
                 text: locked,
                 style: theme::TEXT_BOLD,
                 offset: Offset::new(10, LOCKED_Y),
-                icon: Some(Icon::new(theme::ICON_LOCK)),
+                icon: Some(theme::ICON_LOCK),
             },
             HomescreenText {
                 text: tap,

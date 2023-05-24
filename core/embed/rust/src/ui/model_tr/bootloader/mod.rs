@@ -286,14 +286,7 @@ extern "C" fn screen_wipe_success() {
     let m_bottom =
         Paragraphs::new(messages).with_placement(LinearPlacement::vertical().align_at_center());
 
-    let mut frame = ResultScreen::new(
-        BLD_FG,
-        BLD_BG,
-        Icon::new(ICON_SUCCESS),
-        m_top,
-        m_bottom,
-        true,
-    );
+    let mut frame = ResultScreen::new(BLD_FG, BLD_BG, ICON_SUCCESS, m_top, m_bottom, true);
     show(&mut frame);
 }
 
@@ -313,7 +306,7 @@ extern "C" fn screen_wipe_fail() {
     let m_bottom =
         Paragraphs::new(messages).with_placement(LinearPlacement::vertical().align_at_center());
 
-    let mut frame = ResultScreen::new(BLD_FG, BLD_BG, Icon::new(ICON_FAIL), m_top, m_bottom, true);
+    let mut frame = ResultScreen::new(BLD_FG, BLD_BG, ICON_FAIL, m_top, m_bottom, true);
     show(&mut frame);
 }
 
@@ -337,7 +330,7 @@ extern "C" fn screen_install_fail() {
     let m_bottom =
         Paragraphs::new(messages).with_placement(LinearPlacement::vertical().align_at_center());
 
-    let mut frame = ResultScreen::new(BLD_FG, BLD_BG, Icon::new(ICON_FAIL), m_top, m_bottom, true);
+    let mut frame = ResultScreen::new(BLD_FG, BLD_BG, ICON_FAIL, m_top, m_bottom, true);
     show(&mut frame);
 }
 
@@ -355,14 +348,7 @@ fn screen_install_success_bld(msg: &'static str, complete_draw: bool) {
     let m_bottom =
         Paragraphs::new(messages).with_placement(LinearPlacement::vertical().align_at_center());
 
-    let mut frame = ResultScreen::new(
-        BLD_FG,
-        BLD_BG,
-        Icon::new(ICON_SUCCESS),
-        m_top,
-        m_bottom,
-        complete_draw,
-    );
+    let mut frame = ResultScreen::new(BLD_FG, BLD_BG, ICON_SUCCESS, m_top, m_bottom, complete_draw);
     show(&mut frame);
 }
 
@@ -380,14 +366,7 @@ fn screen_install_success_initial(msg: &'static str, complete_draw: bool) {
     let m_bottom =
         Paragraphs::new(messages).with_placement(LinearPlacement::vertical().align_at_center());
 
-    let mut frame = ResultScreen::new(
-        BLD_FG,
-        BLD_BG,
-        Icon::new(ICON_SUCCESS),
-        m_top,
-        m_bottom,
-        complete_draw,
-    );
+    let mut frame = ResultScreen::new(BLD_FG, BLD_BG, ICON_SUCCESS, m_top, m_bottom, complete_draw);
     show(&mut frame);
 }
 

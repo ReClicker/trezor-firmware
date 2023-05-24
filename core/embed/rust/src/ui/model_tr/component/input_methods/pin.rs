@@ -30,7 +30,7 @@ const MAX_PIN_LENGTH: usize = 50;
 
 const CHOICE_LENGTH: usize = 13;
 const NUMBER_START_INDEX: usize = 3;
-const CHOICES: [(&str, PinAction, Option<&'static [u8]>); CHOICE_LENGTH] = [
+const CHOICES: [(&str, PinAction, Option<Icon>); CHOICE_LENGTH] = [
     ("DELETE", PinAction::Delete, Some(theme::ICON_DELETE)),
     ("SHOW", PinAction::Show, Some(theme::ICON_EYE)),
     ("ENTER", PinAction::Enter, Some(theme::ICON_TICK)),
@@ -64,7 +64,7 @@ impl ChoiceFactory for ChoiceFactoryPIN {
 
         // Adding icons for appropriate items
         if let Some(icon) = icon {
-            choice_item = choice_item.with_icon(Icon::new(icon));
+            choice_item = choice_item.with_icon(icon);
         }
 
         (choice_item, action)

@@ -219,13 +219,13 @@ where
             // Paint both arms.
             // Baselines are adjusted to give space between text and icon.
             // 2 px because 1px might lead to odd coordinate which can't be render
-            Icon::new(theme::ICON_ARM_LEFT).draw(
+            theme::ICON_ARM_LEFT.draw(
                 area.left_center() + Offset::x(-2),
                 TOP_RIGHT,
                 text_color,
                 background_color,
             );
-            Icon::new(theme::ICON_ARM_RIGHT).draw(
+            theme::ICON_ARM_RIGHT.draw(
                 area.right_center() + Offset::x(2),
                 TOP_LEFT,
                 text_color,
@@ -401,21 +401,21 @@ impl<T> ButtonDetails<T> {
 
     /// Cross-style-icon cancel button with no outline.
     pub fn cancel_icon() -> Self {
-        Self::icon(Icon::new(theme::ICON_CANCEL))
+        Self::icon(theme::ICON_CANCEL)
             .with_no_outline()
             .with_offset(Offset::new(2, -2))
     }
 
     /// Left arrow to signal going back. No outline.
     pub fn left_arrow_icon() -> Self {
-        Self::icon(Icon::new(theme::ICON_ARROW_LEFT))
+        Self::icon(theme::ICON_ARROW_LEFT)
             .with_no_outline()
             .with_offset(Offset::new(1, -1))
     }
 
     /// Right arrow to signal going forward. No outline.
     pub fn right_arrow_icon() -> Self {
-        Self::icon(Icon::new(theme::ICON_ARROW_RIGHT))
+        Self::icon(theme::ICON_ARROW_RIGHT)
             .with_no_outline()
             .with_offset(Offset::new(-1, -1))
     }
@@ -423,24 +423,24 @@ impl<T> ButtonDetails<T> {
     /// Up arrow to signal paginating back. No outline. Offsetted little right
     /// to not be on the boundary.
     pub fn up_arrow_icon() -> Self {
-        Self::icon(Icon::new(theme::ICON_ARROW_UP))
+        Self::icon(theme::ICON_ARROW_UP)
             .with_no_outline()
             .with_offset(Offset::new(2, -3))
     }
 
     /// Down arrow to signal paginating forward. Takes half the screen's width
     pub fn down_arrow_icon_wide() -> Self {
-        Self::icon(Icon::new(theme::ICON_ARROW_DOWN)).fixed_width(HALF_SCREEN_BUTTON_WIDTH)
+        Self::icon(theme::ICON_ARROW_DOWN).fixed_width(HALF_SCREEN_BUTTON_WIDTH)
     }
 
     /// Up arrow to signal paginating back. Takes half the screen's width
     pub fn up_arrow_icon_wide() -> Self {
-        Self::icon(Icon::new(theme::ICON_ARROW_UP)).fixed_width(HALF_SCREEN_BUTTON_WIDTH)
+        Self::icon(theme::ICON_ARROW_UP).fixed_width(HALF_SCREEN_BUTTON_WIDTH)
     }
 
     /// Icon of a bin to signal deleting.
     pub fn bin_icon() -> Self {
-        Self::icon(Icon::new(theme::ICON_BIN)).with_no_outline()
+        Self::icon(theme::ICON_BIN).with_no_outline()
     }
 
     /// No outline around the button.
@@ -887,40 +887,37 @@ impl ButtonActions {
 // DEBUG-ONLY SECTION BELOW
 
 #[cfg(feature = "ui_debug")]
-impl<T> crate::trace::Trace for Button<T>
-where
-    T: StringType + crate::trace::Trace,
+impl<T: StringType> crate::trace::Trace for Button<T>
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("Button");
         match &self.content {
             ButtonContent::Text(text) => t.string("text", text.as_ref()),
-            ButtonContent::Icon(_) => t.bool("icon", true),
+            ButtonContent::Icon(icon) => {
+                t.null("text");
+                t.string("icon", icon.name);
+            }
         }
     }
 }
 
 #[cfg(feature = "ui_debug")]
-use heapless::String;
-
-#[cfg(feature = "ui_debug")]
-impl<T> crate::trace::Trace for ButtonDetails<T>
-where
-    T: StringType + crate::trace::Trace,
+impl<T: StringType> crate::trace::Trace for ButtonDetails<T>
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ButtonDetails");
-        let mut btn_text: String<30> = String::new();
         match &self.content {
-            ButtonContent::Text(text) => unwrap!(btn_text.push_str(text.as_ref())),
-            ButtonContent::Icon(_) => unwrap!(btn_text.push_str("Icon")),
+            ButtonContent::Text(text) => {
+                t.string("text", text.as_ref());
+            }
+            ButtonContent::Icon(icon) => {
+                t.null("text");
+                t.string("icon", icon.name);
+            }
         }
         if let Some(duration) = &self.duration {
-            unwrap!(btn_text.push_str(" (HTC:"));
-            unwrap!(btn_text.push_str(inttostr!(duration.to_millis())));
-            unwrap!(btn_text.push_str(")"));
+            t.int("hold_to_confirm", duration.to_millis() as i64);
         }
-        t.string("button", btn_text.as_ref());
     }
 }
 

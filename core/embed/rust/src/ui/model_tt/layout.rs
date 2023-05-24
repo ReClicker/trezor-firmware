@@ -30,7 +30,7 @@ use crate::{
             },
             Border, Component, Empty, FormattedText, Never, Qr, Timeout, TimeoutMsg,
         },
-        display::{self, tjpgd::jpeg_info, toif::Icon},
+        display::{self, tjpgd::jpeg_info},
         geometry,
         layout::{
             obj::{ComponentMsgObj, LayoutObj},
@@ -673,7 +673,7 @@ extern "C" fn new_confirm_reset_device(n_args: usize, args: *const Obj, kwargs: 
             Paragraph::new(&theme::TEXT_DEMIBOLD, StrBuffer::from("trezor.io/tos")),
         ]);
         let buttons = Button::cancel_confirm(
-            Button::with_icon(Icon::new(theme::ICON_CANCEL)),
+            Button::with_icon(theme::ICON_CANCEL),
             Button::with_text(button).styled(theme::button_confirm()),
             true,
         );
@@ -821,7 +821,7 @@ extern "C" fn new_confirm_modify_output(n_args: usize, args: *const Obj, kwargs:
         ]);
 
         let buttons = Button::cancel_confirm(
-            Button::with_icon(Icon::new(theme::ICON_CANCEL)),
+            Button::with_icon(theme::ICON_CANCEL),
             Button::with_text("CONFIRM").styled(theme::button_confirm()),
             true,
         );
@@ -914,7 +914,7 @@ fn new_show_modal(
                 icon,
                 title,
                 Button::cancel_confirm(
-                    Button::with_icon(Icon::new(theme::ICON_CANCEL)),
+                    Button::with_icon(theme::ICON_CANCEL),
                     Button::with_text(button).styled(button_style),
                     false,
                 ),
@@ -943,8 +943,8 @@ fn new_show_modal(
 extern "C" fn new_show_error(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let icon = BlendedImage::new(
-            Icon::new(theme::IMAGE_BG_CIRCLE),
-            Icon::new(theme::IMAGE_FG_ERROR),
+            theme::IMAGE_BG_CIRCLE,
+            theme::IMAGE_FG_ERROR,
             theme::ERROR_COLOR,
             theme::FG,
             theme::BG,
@@ -972,7 +972,7 @@ extern "C" fn new_confirm_fido(n_args: usize, args: *const Obj, kwargs: *mut Map
         };
 
         let controls = Button::cancel_confirm(
-            Button::with_icon(Icon::new(theme::ICON_CANCEL)),
+            Button::with_icon(theme::ICON_CANCEL),
             Button::with_text("CONFIRM").styled(theme::button_confirm()),
             true,
         );
@@ -988,8 +988,8 @@ extern "C" fn new_confirm_fido(n_args: usize, args: *const Obj, kwargs: *mut Map
 extern "C" fn new_show_warning(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let icon = BlendedImage::new(
-            Icon::new(theme::IMAGE_BG_OCTAGON),
-            Icon::new(theme::IMAGE_FG_WARN),
+            theme::IMAGE_BG_OCTAGON,
+            theme::IMAGE_FG_WARN,
             theme::WARN_COLOR,
             theme::FG,
             theme::BG,
@@ -1002,8 +1002,8 @@ extern "C" fn new_show_warning(n_args: usize, args: *const Obj, kwargs: *mut Map
 extern "C" fn new_show_success(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let icon = BlendedImage::new(
-            Icon::new(theme::IMAGE_BG_CIRCLE),
-            Icon::new(theme::IMAGE_FG_SUCCESS),
+            theme::IMAGE_BG_CIRCLE,
+            theme::IMAGE_FG_SUCCESS,
             theme::SUCCESS_COLOR,
             theme::FG,
             theme::BG,
@@ -1016,8 +1016,8 @@ extern "C" fn new_show_success(n_args: usize, args: *const Obj, kwargs: *mut Map
 extern "C" fn new_show_info(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let icon = BlendedImage::new(
-            Icon::new(theme::IMAGE_BG_CIRCLE),
-            Icon::new(theme::IMAGE_FG_INFO),
+            theme::IMAGE_BG_CIRCLE,
+            theme::IMAGE_FG_INFO,
             theme::INFO_COLOR,
             theme::FG,
             theme::BG,
@@ -1035,8 +1035,8 @@ extern "C" fn new_show_mismatch() -> Obj {
         let button = "QUIT";
 
         let icon = BlendedImage::new(
-            Icon::new(theme::IMAGE_BG_OCTAGON),
-            Icon::new(theme::IMAGE_FG_WARN),
+            theme::IMAGE_BG_OCTAGON,
+            theme::IMAGE_FG_WARN,
             theme::WARN_COLOR,
             theme::FG,
             theme::BG,
@@ -1046,7 +1046,7 @@ extern "C" fn new_show_mismatch() -> Obj {
                 icon,
                 title,
                 Button::cancel_confirm(
-                    Button::with_icon(Icon::new(theme::ICON_BACK)),
+                    Button::with_icon(theme::ICON_BACK),
                     Button::with_text(button).styled(theme::button_reset()),
                     true,
                 ),
@@ -1336,8 +1336,8 @@ extern "C" fn new_show_checklist(n_args: usize, args: *const Obj, kwargs: *mut M
             title,
             Dialog::new(
                 Checklist::from_paragraphs(
-                    Icon::new(theme::ICON_LIST_CURRENT),
-                    Icon::new(theme::ICON_LIST_CHECK),
+                    theme::ICON_LIST_CURRENT,
+                    theme::ICON_LIST_CHECK,
                     active,
                     paragraphs
                         .into_paragraphs()

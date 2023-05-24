@@ -2,7 +2,6 @@ use crate::{
     trezorhal::wordlist::Wordlist,
     ui::{
         component::{text::common::TextBox, Child, Component, ComponentExt, Event, EventCtx},
-        display::Icon,
         geometry::Rect,
         util::char_to_string,
     },
@@ -76,7 +75,7 @@ impl ChoiceFactory for ChoiceFactoryWordlist {
         if choice_index == DELETE_INDEX {
             return (
                 ChoiceItem::new("DELETE", ButtonLayout::arrow_armed_arrow("CONFIRM"))
-                    .with_icon(Icon::new(theme::ICON_DELETE)),
+                    .with_icon(theme::ICON_DELETE),
                 WordlistAction::Delete,
             );
         }

@@ -159,6 +159,13 @@ pub fn long_line_content_with_ellipsis(
     }
 }
 
+#[macro_export]
+macro_rules! include_icon {
+    ($name:ident, $path:expr) => {
+        pub const $name: Icon = Icon::debug_named(include_res!($path), stringify!($name));
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use crate::strutil;

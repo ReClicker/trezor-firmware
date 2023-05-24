@@ -8,7 +8,7 @@ use crate::{
             },
             LineBreaking, Paginate, TextLayout,
         },
-        display::{Font, Icon},
+        display::Font,
         geometry::{Alignment, Offset, Rect},
         util::ResultExt,
     },
@@ -120,14 +120,8 @@ where
             theme::FG,
             theme::FG,
         )
-        .with_ellipsis_icon(
-            Icon::new(theme::ICON_NEXT_PAGE),
-            theme::ELLIPSIS_ICON_MARGIN,
-        )
-        .with_prev_page_icon(
-            Icon::new(theme::ICON_PREV_PAGE),
-            theme::PREV_PAGE_ICON_MARGIN,
-        );
+        .with_ellipsis_icon(theme::ICON_NEXT_PAGE, theme::ELLIPSIS_ICON_MARGIN)
+        .with_prev_page_icon(theme::ICON_PREV_PAGE, theme::PREV_PAGE_ICON_MARGIN);
         Self {
             ops: Vec::new(),
             text_layout: TextLayout::new(style),

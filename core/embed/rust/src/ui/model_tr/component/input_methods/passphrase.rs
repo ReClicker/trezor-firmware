@@ -44,7 +44,7 @@ const SPECIAL_INDEX: usize = 6;
 const SPACE_INDEX: usize = 7;
 
 // Menu text, action, icon data, middle button with CONFIRM
-const MENU: [(&str, PassphraseAction, Option<&'static [u8]>, bool); MENU_LENGTH] = [
+const MENU: [(&str, PassphraseAction, Option<Icon>, bool); MENU_LENGTH] = [
     ("SHOW", PassphraseAction::Show, Some(theme::ICON_EYE), true),
     (
         "CANCEL_OR_DELETE", // will be chosen dynamically
@@ -181,7 +181,7 @@ impl ChoiceFactoryPassphrase {
         }
 
         if let Some(icon) = icon {
-            menu_item = menu_item.with_icon(Icon::new(icon));
+            menu_item = menu_item.with_icon(icon);
         }
         (menu_item, action)
     }
@@ -192,7 +192,7 @@ impl ChoiceFactoryPassphrase {
         if is_menu_choice(&self.current_category, choice_index) {
             (
                 ChoiceItem::new("BACK", ButtonLayout::arrow_armed_arrow("RETURN"))
-                    .with_icon(Icon::new(theme::ICON_ARROW_BACK_UP)),
+                    .with_icon(theme::ICON_ARROW_BACK_UP),
                 PassphraseAction::Menu,
             )
         } else {

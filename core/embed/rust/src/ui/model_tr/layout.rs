@@ -29,7 +29,7 @@ use crate::{
             },
             ComponentExt, LineBreaking, Timeout, TimeoutMsg,
         },
-        display::{self, Font, Icon},
+        display::{self, Font},
         geometry::Alignment,
         layout::{
             obj::{ComponentMsgObj, LayoutObj},
@@ -1079,8 +1079,8 @@ extern "C" fn new_show_checklist(n_args: usize, args: *const Obj, kwargs: *mut M
         let obj = LayoutObj::new(
             ButtonPage::new(
                 Checklist::from_paragraphs(
-                    Icon::new(theme::ICON_ARROW_RIGHT_FAT),
-                    Icon::new(theme::ICON_TICK_FAT),
+                    theme::ICON_ARROW_RIGHT_FAT,
+                    theme::ICON_TICK_FAT,
                     active,
                     paragraphs
                         .into_paragraphs()
