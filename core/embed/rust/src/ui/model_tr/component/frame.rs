@@ -21,7 +21,7 @@ where
 impl<T, U> Frame<T, U>
 where
     T: Component,
-    U: StringType,
+    U: StringType + Clone,
 {
     pub fn new(title: U, content: T) -> Self {
         Self {
@@ -59,7 +59,7 @@ where
 impl<T, U> Component for Frame<T, U>
 where
     T: Component,
-    U: StringType,
+    U: StringType + Clone,
 {
     type Msg = T::Msg;
 
@@ -88,7 +88,7 @@ where
 impl<T, U> Paginate for Frame<T, U>
 where
     T: Component + Paginate,
-    U: StringType,
+    U: StringType + Clone,
 {
     fn page_count(&mut self) -> usize {
         self.content.page_count()
@@ -109,7 +109,7 @@ pub trait ScrollableContent {
 pub struct ScrollableFrame<T, U>
 where
     T: Component + ScrollableContent,
-    U: StringType,
+    U: StringType + Clone,
 {
     title: Option<Child<Title<U>>>,
     scrollbar: ScrollBar,
@@ -119,7 +119,7 @@ where
 impl<T, U> ScrollableFrame<T, U>
 where
     T: Component + ScrollableContent,
-    U: StringType,
+    U: StringType + Clone,
 {
     pub fn new(content: T) -> Self {
         Self {
@@ -142,7 +142,7 @@ where
 impl<T, U> Component for ScrollableFrame<T, U>
 where
     T: Component + ScrollableContent,
-    U: StringType,
+    U: StringType + Clone,
 {
     type Msg = T::Msg;
 
@@ -210,7 +210,7 @@ where
 impl<T, U> crate::trace::Trace for Frame<T, U>
 where
     T: crate::trace::Trace + Component,
-    U: StringType,
+    U: StringType + Clone,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("Frame");
@@ -223,7 +223,7 @@ where
 impl<T, U> crate::trace::Trace for ScrollableFrame<T, U>
 where
     T: crate::trace::Trace + Component + ScrollableContent,
-    U: StringType,
+    U: StringType + Clone,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ScrollableFrame");

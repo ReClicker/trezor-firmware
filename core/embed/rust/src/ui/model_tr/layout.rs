@@ -72,7 +72,7 @@ impl TryFrom<CancelConfirmMsg> for Obj {
 impl<T, U> ComponentMsgObj for ShowMore<T, U>
 where
     T: Component,
-    U: StringType,
+    U: StringType + Clone,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
@@ -95,7 +95,7 @@ where
 impl<T, U> ComponentMsgObj for ButtonPage<T, U>
 where
     T: Component + Paginate,
-    U: StringType,
+    U: StringType + Clone,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
@@ -110,7 +110,7 @@ where
 impl<F, T> ComponentMsgObj for Flow<F, T>
 where
     F: Fn(usize) -> Page<T>,
-    T: StringType,
+    T: StringType + Clone,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
@@ -124,7 +124,7 @@ where
 
 impl<T> ComponentMsgObj for PinEntry<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
@@ -147,7 +147,7 @@ where
 
 impl<T> ComponentMsgObj for AddressDetails<T>
 where
-    T: StringType + ParagraphStrType,
+    T: StringType + Clone + ParagraphStrType,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
@@ -173,7 +173,7 @@ impl ComponentMsgObj for NumberInput {
 
 impl<T> ComponentMsgObj for SimpleChoice<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         if self.return_index {
@@ -203,7 +203,7 @@ impl ComponentMsgObj for PassphraseEntry {
 impl<T, U> ComponentMsgObj for Frame<T, U>
 where
     T: ComponentMsgObj,
-    U: StringType,
+    U: StringType + Clone,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         self.inner().msg_try_into_obj(msg)
@@ -213,7 +213,7 @@ where
 impl<T, U> ComponentMsgObj for ScrollableFrame<T, U>
 where
     T: ComponentMsgObj + ScrollableContent,
-    U: StringType,
+    U: StringType + Clone,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         self.inner().msg_try_into_obj(msg)
@@ -231,7 +231,7 @@ where
 
 impl<T> ComponentMsgObj for Homescreen<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
@@ -242,7 +242,7 @@ where
 
 impl<T> ComponentMsgObj for Lockscreen<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {

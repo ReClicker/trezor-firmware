@@ -31,7 +31,7 @@ pub struct ToDisplay<T> {
 
 impl<T> ToDisplay<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     pub fn new(text: T) -> Self {
         Self {
@@ -64,7 +64,7 @@ where
 impl TextLayout {
     /// Perform some operations defined on `Op` for a list of those `Op`s
     /// - e.g. changing the color, changing the font or rendering the text.
-    pub fn layout_ops_new<const M: usize, T: StringType>(
+    pub fn layout_ops_new<const M: usize, T: StringType + Clone>(
         mut self,
         ops: Vec<Op<T>, M>,
         cursor: &mut Point,

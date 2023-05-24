@@ -1,9 +1,9 @@
 use heapless::String;
 
 /// A trait for types that can be converted to a string.
-pub trait StringType: AsRef<str> + Clone + From<&'static str> {}
+pub trait StringType: AsRef<str> + From<&'static str> {}
 
-impl<T> StringType for T where T: AsRef<str> + Clone + From<&'static str> {}
+impl<T> StringType for T where T: AsRef<str> + From<&'static str> {}
 
 /// Unified-length String type, long enough for most simple use-cases.
 pub type ShortString = String<50>;

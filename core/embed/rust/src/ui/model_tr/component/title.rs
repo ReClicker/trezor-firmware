@@ -23,7 +23,7 @@ where
 
 impl<T> Title<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     pub fn new(title: T) -> Self {
         Self {
@@ -85,7 +85,7 @@ where
 
 impl<T> Component for Title<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     type Msg = Never;
 
@@ -123,7 +123,7 @@ where
 #[cfg(feature = "ui_debug")]
 impl<T> crate::trace::Trace for Title<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("Title");

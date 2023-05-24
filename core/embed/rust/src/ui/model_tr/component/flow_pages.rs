@@ -49,7 +49,7 @@ where
 impl<F, T> FlowPages<F, T>
 where
     F: Fn(usize) -> Page<T>,
-    T: StringType,
+    T: StringType + Clone,
 {
     pub fn new(get_page: F, page_count: usize) -> Self {
         Self {
@@ -91,7 +91,7 @@ where
 #[derive(Clone)]
 pub struct Page<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     ops: Vec<Op<T>, MAX_OPS_PER_PAGE>,
     text_layout: TextLayout,
@@ -106,7 +106,7 @@ where
 // For `layout.rs`
 impl<T> Page<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     pub fn new(
         btn_layout: ButtonLayout<T>,
@@ -149,7 +149,7 @@ where
 // For `flow.rs`
 impl<T> Page<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     /// Adding title.
     pub fn with_title(mut self, title: T) -> Self {
@@ -226,7 +226,7 @@ where
 // For `layout.rs` - single operations
 impl<T> Page<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     pub fn with_new_item(mut self, item: Op<T>) -> Self {
         self.ops
@@ -267,7 +267,7 @@ where
 // For `layout.rs` - aggregating operations
 impl<T> Page<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     pub fn text_normal(self, text: T) -> Self {
         self.font(Font::NORMAL).text(text)
@@ -285,7 +285,7 @@ where
 // For painting and pagination
 impl<T> Page<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     pub fn set_char_offset(&mut self, char_offset: usize) {
         self.char_offset = char_offset;
@@ -301,7 +301,7 @@ where
 // Pagination
 impl<T> Paginate for Page<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     fn page_count(&mut self) -> usize {
         let mut page_count = 1; // There's always at least one page.
@@ -368,7 +368,7 @@ where
 #[cfg(feature = "ui_debug")]
 impl<T> crate::trace::Trace for Page<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         use crate::ui::component::text::layout::trace::TraceSink;

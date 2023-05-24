@@ -57,7 +57,7 @@ where
 /// inputting a list of values and receiving the chosen one.
 pub struct SimpleChoice<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     choices: Vec<T, MAX_LENGTH>,
     choice_page: ChoicePage<ChoiceFactorySimple<T>, usize>,
@@ -66,7 +66,7 @@ where
 
 impl<T> SimpleChoice<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     pub fn new(str_choices: Vec<T, MAX_LENGTH>, carousel: bool) -> Self {
         let choices = ChoiceFactorySimple::new(str_choices.clone(), carousel);
@@ -103,7 +103,7 @@ where
 
 impl<T> Component for SimpleChoice<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     type Msg = usize;
 
@@ -130,7 +130,7 @@ use crate::strutil::ShortString;
 #[cfg(feature = "ui_debug")]
 impl<T> ButtonTrace for SimpleChoice<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     fn get_left_action(&self) -> ShortString {
         match self.choice_page.has_previous_choice() {
@@ -155,7 +155,7 @@ where
 #[cfg(feature = "ui_debug")]
 impl<T> crate::trace::Trace for SimpleChoice<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("SimpleChoice");

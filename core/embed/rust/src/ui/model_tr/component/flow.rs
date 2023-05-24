@@ -22,7 +22,7 @@ pub enum FlowMsg {
 pub struct Flow<F, T>
 where
     F: Fn(usize) -> Page<T>,
-    T: StringType,
+    T: StringType + Clone,
 {
     /// Function to get pages from
     pages: FlowPages<F, T>,
@@ -42,7 +42,7 @@ where
 impl<F, T> Flow<F, T>
 where
     F: Fn(usize) -> Page<T>,
-    T: StringType,
+    T: StringType + Clone,
 {
     pub fn new(pages: FlowPages<F, T>) -> Self {
         let current_page = pages.get(0);
@@ -184,7 +184,7 @@ where
 impl<F, T> Component for Flow<F, T>
 where
     F: Fn(usize) -> Page<T>,
-    T: StringType,
+    T: StringType + Clone,
 {
     type Msg = FlowMsg;
 
@@ -301,7 +301,7 @@ use crate::strutil::ShortString;
 impl<F, T> Flow<F, T>
 where
     F: Fn(usize) -> Page<T>,
-    T: StringType,
+    T: StringType + Clone,
 {
     fn get_action_by_button_pos(&self, button_pos: ButtonPos) -> ShortString {
         let btn_actions = self.current_page.btn_actions();
@@ -316,7 +316,7 @@ where
 impl<F, T> ButtonTrace for Flow<F, T>
 where
     F: Fn(usize) -> Page<T>,
-    T: StringType,
+    T: StringType + Clone,
 {
     // Accounting for the possibility that button is connected with the
     // currently paginated flow_page (only Prev or Next in that case).
@@ -344,7 +344,7 @@ where
 impl<F, T> crate::trace::Trace for Flow<F, T>
 where
     F: Fn(usize) -> Page<T>,
-    T: StringType,
+    T: StringType + Clone,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("Flow");

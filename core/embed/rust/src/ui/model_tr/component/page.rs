@@ -37,7 +37,7 @@ where
 impl<T, U> ButtonPage<T, U>
 where
     T: Component + Paginate,
-    U: StringType,
+    U: StringType + Clone,
 {
     pub fn new(content: T, background: Color) -> Self {
         Self {
@@ -166,7 +166,7 @@ where
 impl<T, U> Component for ButtonPage<T, U>
 where
     T: Component + Paginate,
-    U: StringType,
+    U: StringType + Clone,
 {
     type Msg = PageMsg<T::Msg, bool>;
 
@@ -239,7 +239,7 @@ use crate::strutil::ShortString;
 impl<T, U> ButtonTrace for ButtonPage<T, U>
 where
     T: crate::trace::Trace + Paginate + Component,
-    U: StringType,
+    U: StringType + Clone,
 {
     fn get_left_action(&self) -> ShortString {
         if self.has_previous_page() {
@@ -270,7 +270,7 @@ where
 impl<T, U> crate::trace::Trace for ButtonPage<T, U>
 where
     T: crate::trace::Trace + Paginate + Component,
-    U: StringType,
+    U: StringType + Clone,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ButtonPage");

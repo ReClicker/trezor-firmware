@@ -30,7 +30,7 @@ pub enum ButtonPos {
 
 pub struct Button<T>
 where
-    T: AsRef<str>,
+    T: StringType,
 {
     bounds: Rect,
     pos: ButtonPos,
@@ -41,7 +41,7 @@ where
 
 impl<T> Button<T>
 where
-    T: AsRef<str> + Clone,
+    T: StringType,
 {
     pub fn new(pos: ButtonPos, content: ButtonContent<T>, styles: ButtonStyleSheet) -> Self {
         Self {
@@ -183,7 +183,7 @@ where
 
 impl<T> Component for Button<T>
 where
-    T: AsRef<str> + Clone,
+    T: StringType,
 {
     type Msg = ButtonMsg;
 
@@ -889,7 +889,7 @@ impl ButtonActions {
 #[cfg(feature = "ui_debug")]
 impl<T> crate::trace::Trace for Button<T>
 where
-    T: AsRef<str> + crate::trace::Trace,
+    T: StringType + crate::trace::Trace,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("Button");
@@ -906,7 +906,7 @@ use heapless::String;
 #[cfg(feature = "ui_debug")]
 impl<T> crate::trace::Trace for ButtonDetails<T>
 where
-    T: AsRef<str> + crate::trace::Trace,
+    T: StringType + crate::trace::Trace,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ButtonDetails");

@@ -37,7 +37,7 @@ where
 
 impl<T> ShareWords<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     pub fn new(title: T, share_words: Vec<T, MAX_WORDS>) -> Self {
         let mut instance = Self {
@@ -157,7 +157,7 @@ where
 
 impl<T> Component for ShareWords<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     type Msg = Never;
 
@@ -199,7 +199,7 @@ where
 
 impl<T> Paginate for ShareWords<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     fn page_count(&mut self) -> usize {
         // Not defining the logic here, as we do not want it to be `&mut`.
@@ -217,7 +217,7 @@ where
 #[cfg(feature = "ui_debug")]
 impl<T> crate::trace::Trace for ShareWords<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ShareWords");

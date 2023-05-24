@@ -54,7 +54,7 @@ where
 
 impl<T> ButtonType<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     pub fn from_button_details(pos: ButtonPos, btn_details: Option<ButtonDetails<T>>) -> Self {
         if let Some(btn_details) = btn_details {
@@ -108,7 +108,7 @@ where
 
 impl<T> ButtonContainer<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     /// Supplying `None` as `btn_details`  marks the button inactive
     /// (it can be later activated in `set()`).
@@ -203,7 +203,7 @@ where
 
 impl<T> ButtonController<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     pub fn new(btn_layout: ButtonLayout<T>) -> Self {
         Self {
@@ -268,7 +268,7 @@ where
 
 impl<T> Component for ButtonController<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     type Msg = ButtonControllerMsg;
 
@@ -437,7 +437,7 @@ use super::ButtonContent;
 #[cfg(feature = "ui_debug")]
 impl<T> crate::trace::Trace for ButtonContainer<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("Button");
@@ -461,7 +461,7 @@ where
 #[cfg(feature = "ui_debug")]
 impl<T> crate::trace::Trace for ButtonController<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ButtonController");

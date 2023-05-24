@@ -90,7 +90,7 @@ where
 
 impl<T> PinEntry<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     pub fn new(prompt: T, subprompt: T) -> Self {
         let choices = ChoiceFactoryPIN;
@@ -172,7 +172,7 @@ where
 
 impl<T> Component for PinEntry<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     type Msg = PinEntryMsg;
 

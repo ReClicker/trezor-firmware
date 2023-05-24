@@ -25,7 +25,7 @@ where
 impl<T, U> ShowMore<T, U>
 where
     T: Component,
-    U: StringType,
+    U: StringType + Clone,
 {
     pub fn new(content: T) -> Self {
         let btn_layout = ButtonLayout::cancel_armed_text("CONFIRM".into(), "i".into());
@@ -39,7 +39,7 @@ where
 impl<T, U> Component for ShowMore<T, U>
 where
     T: Component,
-    U: StringType,
+    U: StringType + Clone,
 {
     type Msg = CancelInfoConfirmMsg;
 
@@ -107,7 +107,7 @@ where
 impl<T, U> crate::trace::Trace for ShowMore<T, U>
 where
     T: crate::trace::Trace + Component,
-    U: StringType,
+    U: StringType + Clone,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ShowMore");

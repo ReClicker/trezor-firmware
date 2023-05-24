@@ -42,7 +42,7 @@ const ANIM_POS_ADJ_BUTTON: i16 = 6;
 
 impl<T> ResultPopup<T>
 where
-    T: StringType + ParagraphStrType,
+    T: StringType + Clone + ParagraphStrType,
 {
     pub fn new(
         icon: Icon,
@@ -91,7 +91,7 @@ where
 
 impl<T> Component for ResultPopup<T>
 where
-    T: StringType + ParagraphStrType,
+    T: StringType + Clone + ParagraphStrType,
 {
     type Msg = ResultPopupMsg;
 
@@ -167,7 +167,7 @@ where
 #[cfg(feature = "ui_debug")]
 impl<T> crate::trace::Trace for ResultPopup<T>
 where
-    T: StringType + ParagraphStrType,
+    T: StringType + Clone + ParagraphStrType,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("ResultPopup");

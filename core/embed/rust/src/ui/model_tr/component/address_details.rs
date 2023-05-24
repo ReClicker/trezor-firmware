@@ -42,7 +42,7 @@ where
 
 impl<T> AddressDetails<T>
 where
-    T: StringType + ParagraphStrType,
+    T: StringType + Clone + ParagraphStrType,
 {
     pub fn new(
         qr_address: T,
@@ -183,7 +183,7 @@ where
 
 impl<T> Component for AddressDetails<T>
 where
-    T: StringType + ParagraphStrType,
+    T: StringType + Clone + ParagraphStrType,
 {
     type Msg = AddressDetailsMsg;
 
@@ -273,7 +273,7 @@ where
 #[cfg(feature = "ui_debug")]
 impl<T> crate::trace::Trace for AddressDetails<T>
 where
-    T: StringType + ParagraphStrType,
+    T: StringType + Clone + ParagraphStrType,
 {
     fn trace(&self, t: &mut dyn crate::trace::Tracer) {
         t.component("AddressDetails");

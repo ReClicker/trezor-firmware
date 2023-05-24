@@ -41,7 +41,7 @@ pub enum HomescreenMsg {
 
 impl<T> Homescreen<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     pub fn new(label: T, notification: Option<(T, u8)>) -> Self {
         let invisible_btn_layout = ButtonLayout::htc_none_htc("".into(), "".into());
@@ -107,7 +107,7 @@ where
 
 impl<T> Component for Homescreen<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     type Msg = HomescreenMsg;
 
@@ -146,7 +146,7 @@ where
 
 impl<T> Lockscreen<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     pub fn new(label: T, bootscreen: bool) -> Self {
         let invisible_btn_layout = ButtonLayout::text_none_text("".into(), "".into());
@@ -165,7 +165,7 @@ where
 
 impl<T> Component for Lockscreen<T>
 where
-    T: StringType,
+    T: StringType + Clone,
 {
     type Msg = HomescreenMsg;
 
