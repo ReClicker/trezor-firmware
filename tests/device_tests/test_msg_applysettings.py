@@ -56,12 +56,6 @@ def _set_expected_responses(client: Client):
         client.set_expected_responses(EXPECTED_RESPONSES_PIN_TT)
 
 
-def _enable_experimental_features(client: Client):
-    with client:
-        client.set_expected_responses(EXPECTED_RESPONSES_EXPERIMENTAL_FEATURES)
-        device.apply_settings(client, experimental_features=True)
-
-
 def test_apply_settings(client: Client):
     assert client.features.label == "test"
 
@@ -420,7 +414,9 @@ def test_experimental_features(client: Client):
         client.set_expected_responses([messages.Failure])
         experimental_call()
 
-    _enable_experimental_features(client)
+    with client:
+        client.set_expected_responses(EXPECTED_RESPONSES_EXPERIMENTAL_FEATURES)
+        device.apply_settings(client, experimental_features=True)
 
     assert client.features.experimental_features
 
